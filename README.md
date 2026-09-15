@@ -1,6 +1,6 @@
 # Essentia — Plateforme e-commerce de parfums avec IA & 3D
 
-Projet Bac 2 Informatique & Développement d'Applications — Durée cible : ~1 mois
+Projet Bac 3 Informatique & Développement d'Applications — Durée cible : ~1 mois
 
 ## 🎯 Objectif
 
