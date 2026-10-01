@@ -1,5 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // Relations chargées en une seule requête SQL (moins d'allers-retours vers Neon)
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {

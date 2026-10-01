@@ -75,14 +75,16 @@ function averageColor({ data, width }: Pixels, y: number, from: number, to: numb
 // Texture entièrement opaque : les zones transparentes à l'intérieur du flacon (verre clair
 // effacé par le détourage) sont bouchées avec la couleur de la ligne, et l'extérieur prolonge
 // le bord, pour qu'aucun trou ni liseré sombre n'apparaisse sur le volume.
-function opaqueTexture(image: HTMLImageElement) {
-  const width = image.naturalWidth;
-  const height = image.naturalHeight;
+function opaqueCanvas(image: HTMLImageElement, maxHeight: number) {
+  // Traitement à la taille utile seulement : une vignette n'a pas besoin de la photo en pleine résolution
+  const ratio = Math.min(1, maxHeight / image.naturalHeight);
+  const width = Math.max(1, Math.round(image.naturalWidth * ratio));
+  const height = Math.max(1, Math.round(image.naturalHeight * ratio));
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
-  ctx.drawImage(image, 0, 0);
+  ctx.drawImage(image, 0, 0, width, height);
   const imageData = ctx.getImageData(0, 0, width, height);
   const { data } = imageData;
   const pixels: Pixels = { data, width, height };
@@ -114,9 +116,26 @@ function opaqueTexture(image: HTMLImageElement) {
   }
 
   ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+// Résultats du traitement des photos, réutilisés par toutes les vignettes d'un même flacon
+const processed = new Map<string, { canvas: HTMLCanvasElement; rows: Row[]; width: number }>();
+
+function processPhoto(src: string, image: HTMLImageElement, maxHeight: number) {
+  const key = `${src}@${maxHeight}`;
+  let result = processed.get(key);
+  if (!result) {
+    result = { canvas: opaqueCanvas(image, maxHeight), ...measureSilhouette(image) };
+    processed.set(key, result);
+  }
+  return result;
+}
+
+function textureFrom(canvas: HTMLCanvasElement) {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 8;
+  texture.anisotropy = 4;
   return texture;
 }
 
@@ -283,20 +302,21 @@ type PhotoFlaconProps = {
   maxWidth?: number;
   /** Appelé quand le volume est prêt à l'écran */
   onReady?: () => void;
+  /** Hauteur de la texture en pixels (plus petite pour les vignettes) */
+  textureSize?: number;
 };
 
-export default function PhotoFlacon({ src, shape, maxWidth, onReady }: PhotoFlaconProps) {
+export default function PhotoFlacon({ src, shape, maxWidth, onReady, textureSize = 1024 }: PhotoFlaconProps) {
   const loaded = useTexture(src);
 
   const { geometry, material, scale } = useMemo(() => {
-    const image = loaded.image as HTMLImageElement;
-    const { rows, width } = measureSilhouette(image);
+    const { canvas, rows, width } = processPhoto(src, loaded.image as HTMLImageElement, textureSize);
     return {
       geometry: buildGeometry(rows, width, shape),
-      material: createMaterial(opaqueTexture(image)),
+      material: createMaterial(textureFrom(canvas)),
       scale: maxWidth && width > maxWidth ? maxWidth / width : 1,
     };
-  }, [loaded, shape, maxWidth]);
+  }, [loaded, shape, maxWidth, src, textureSize]);
 
   useEffect(() => {
     onReady?.();

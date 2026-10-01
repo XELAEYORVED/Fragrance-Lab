@@ -238,7 +238,7 @@ export default function Bottle3D(props: Bottle3DProps) {
 
   return (
     <Canvas
-      dpr={[1, 2]}
+      dpr={[1, 1.75]}
       camera={{ position: [0, 0.3, 7], fov: 32 }}
       gl={{ alpha: true, antialias: true }}
       onCreated={({ gl }) => {
@@ -246,7 +246,7 @@ export default function Bottle3D(props: Bottle3DProps) {
       }}
     >
       {/* Studio lumineux sans fichier externe, recalculé en continu pour le balayage de lumière */}
-      <Environment resolution={256} frames={motion ? Infinity : 1}>
+      <Environment resolution={128} frames={motion ? Infinity : 1}>
         <Lightformer intensity={2} position={[0, 5, 0]} rotation-x={Math.PI / 2} scale={[10, 10, 1]} />
         {/* Bandes verticales qui dessinent les reflets du verre */}
         <Lightformer intensity={6} position={[-2.5, 0.5, 3]} scale={[0.35, 7, 1]} />

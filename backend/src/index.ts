@@ -48,6 +48,7 @@ app.get("/api/fragrances", async (req, res) => {
     ...(req.query.hasDupes === "1" && { dupes: { some: {} } }),
   };
   const fragrances = await prisma.fragrance.findMany({
+    relationLoadStrategy: "join",
     where,
     include: card,
     // Les parfums les plus notés d'abord, puis ceux qui ont une photo
@@ -62,6 +63,7 @@ app.get("/api/fragrances/random", async (req, res) => {
   const where = { imageUrl: { not: null } };
   const count = await prisma.fragrance.count({ where });
   const [fragrance] = await prisma.fragrance.findMany({
+    relationLoadStrategy: "join",
     where,
     include: card,
     skip: Math.floor(Math.random() * Math.max(count, 1)),
@@ -73,6 +75,7 @@ app.get("/api/fragrances/random", async (req, res) => {
 // Détail d'un parfum avec ses dupes et les originaux dont il s'inspire
 app.get("/api/fragrances/:slug", async (req, res) => {
   const fragrance = await prisma.fragrance.findUnique({
+    relationLoadStrategy: "join",
     where: { slug: req.params.slug },
     include: {
       ...profile,
@@ -90,6 +93,7 @@ app.get("/api/fragrances/:slug", async (req, res) => {
 // Liste des marques avec leur nombre de parfums
 app.get("/api/brands", async (req, res) => {
   const brands = await prisma.brand.findMany({
+    relationLoadStrategy: "join",
     include: { _count: { select: { fragrances: true } } },
     orderBy: { name: "asc" },
   });
@@ -99,6 +103,7 @@ app.get("/api/brands", async (req, res) => {
 // Détail d'une marque avec tous ses parfums
 app.get("/api/brands/:slug", async (req, res) => {
   const brand = await prisma.brand.findUnique({
+    relationLoadStrategy: "join",
     where: { slug: req.params.slug },
     include: {
       fragrances: {

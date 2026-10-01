@@ -66,8 +66,10 @@ export type FragranceDetail = FragranceProfile & {
   inspiredBy: { id: string; original: FragranceBase }[];
 };
 
-async function get<T>(path: string): Promise<T | null> {
-  const res = await fetch(`${API_URL}${path}`, { cache: "no-store" });
+// Le catalogue change rarement : les réponses sont gardées 5 minutes par Next.js,
+// sauf quand une donnée doit être fraîche à chaque visite (flacon aléatoire)
+async function get<T>(path: string, { fresh = false } = {}): Promise<T | null> {
+  const res = await fetch(`${API_URL}${path}`, fresh ? { cache: "no-store" } : { next: { revalidate: 300 } });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`API ${res.status} sur ${path}`);
   return res.json() as Promise<T>;
@@ -83,7 +85,7 @@ export async function getFragrances(options: { q?: string; hasDupes?: boolean; l
 }
 
 export function getRandomFragrance() {
-  return get<FragranceSummary>("/api/fragrances/random");
+  return get<FragranceSummary>("/api/fragrances/random", { fresh: true });
 }
 
 // Fourchette de prix indicative pour 100 ml

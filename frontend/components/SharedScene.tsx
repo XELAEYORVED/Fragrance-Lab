@@ -9,7 +9,7 @@ import { View } from "@react-three/drei";
 export default function SharedScene() {
   return (
     <Canvas
-      dpr={[1, 1.75]}
+      dpr={[1, 1.5]}
       gl={{ alpha: true, antialias: true }}
       style={{ position: "fixed", inset: 0, zIndex: 10, pointerEvents: "none" }}
       onCreated={({ gl }) => {

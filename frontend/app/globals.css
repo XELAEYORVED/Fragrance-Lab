@@ -73,7 +73,7 @@ body {
   position: relative;
   background: var(--glass-fill);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(170%);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     inset 0 -1px 0 var(--glass-lowlight),
@@ -91,7 +91,7 @@ body {
 /* Barre de navigation : plus opaque, le contenu défile dessous sans rester lisible */
 .glass-nav {
   background: var(--glass-nav);
-  backdrop-filter: blur(40px) saturate(200%);
+  backdrop-filter: blur(24px) saturate(180%);
 }
 
 /* Reflet spéculaire en haut à gauche du verre */
@@ -128,19 +128,15 @@ body {
   border-radius: 9999px;
   filter: blur(90px);
   opacity: 0.55;
-  animation: drift 28s ease-in-out infinite alternate;
 }
 
 .ambient span:nth-child(1) { background: var(--blob-1); top: -12vmax; left: -8vmax; }
-.ambient span:nth-child(2) { background: var(--blob-2); top: 20vmax; right: -14vmax; animation-delay: -7s; }
-.ambient span:nth-child(3) { background: var(--blob-3); bottom: -18vmax; left: 18vmax; animation-delay: -14s; }
-.ambient span:nth-child(4) { background: var(--blob-4); top: 35vmax; left: -16vmax; width: 30vmax; height: 30vmax; animation-delay: -21s; }
+.ambient span:nth-child(2) { background: var(--blob-2); top: 20vmax; right: -14vmax; }
+.ambient span:nth-child(3) { background: var(--blob-3); bottom: -18vmax; left: 18vmax; }
+.ambient span:nth-child(4) { background: var(--blob-4); top: 35vmax; left: -16vmax; width: 30vmax; height: 30vmax; }
 
-@keyframes drift {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(6vmax, -4vmax) scale(1.12); }
-  100% { transform: translate(-4vmax, 5vmax) scale(0.94); }
-}
+/* Le fond reste immobile : s'il bougeait, le navigateur devrait recalculer le flou
+   de chaque panneau en verre à chaque image, ce qui saccade la page. */
 
 /* ─── Mouvements ────────────────────────────────────── */
 
