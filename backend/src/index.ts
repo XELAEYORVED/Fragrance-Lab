@@ -17,11 +17,11 @@ app.get("/", (req, res) => {
   res.send("API Fragrance Lab en ligne 🌸");
 });
 
-// Récupérer tous les parfums
-app.get("/api/perfumes", async (req, res) => {
+// Récupérer tous les parfums (route provisoire, l'API complète arrive dans feature/fragrances-api)
+app.get("/api/fragrances", async (req, res) => {
   try {
-    const perfumes = await prisma.perfume.findMany();
-    res.json(perfumes);
+    const fragrances = await prisma.fragrance.findMany({ include: { brand: true } });
+    res.json(fragrances);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erreur lors de la récupération des parfums" });

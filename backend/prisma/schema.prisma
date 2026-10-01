@@ -7,19 +7,207 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Perfume {
-  id              String   @id @default(cuid())
-  name            String
-  brand           String
-  price           Float
-  olfactoryFamily String
-  topNotes        String
-  heartNotes      String
-  baseNotes       String
-  intensity       String
-  imageUrl        String?
-  model3dUrl      String?
-  stock           Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+// ─── Enums ───────────────────────────────────────────────
+
+enum Gender {
+  MASCULINE
+  FEMININE
+  UNISEX
+}
+
+enum Concentration {
+  EAU_DE_COLOGNE
+  EAU_DE_TOILETTE
+  EAU_DE_PARFUM
+  PARFUM
+  EXTRAIT
+  PERFUME_OIL
+}
+
+enum NoteLevel {
+  TOP
+  HEART
+  BASE
+}
+
+enum Season {
+  SPRING
+  SUMMER
+  AUTUMN
+  WINTER
+}
+
+enum TimeOfDay {
+  DAY
+  NIGHT
+}
+
+// Formes de flacon génériques utilisées pour le rendu 3D
+enum BottleShape {
+  ROUND
+  SQUARE
+  RECTANGLE
+  CYLINDER
+  PEBBLE
+  FACETED
+}
+
+// ─── Catalogue ───────────────────────────────────────────
+
+model Brand {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  slug       String      @unique
+  country    String?
+  website    String?
+  fragrances Fragrance[]
+}
+
+model Fragrance {
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  brandId       String
+  brand         Brand          @relation(fields: [brandId], references: [id])
+  year          Int?
+  gender        Gender
+  concentration Concentration?
+  family        String? // ex: "Oriental épicé", "Boisé aromatique"
+  description   String?
+
+  // Profil de performance, notes sur 10
+  longevity  Int?
+  sillage    Int?
+  seasons    Season[]
+  timesOfDay TimeOfDay[]
+
+  // Note moyenne de la communauté (sur 5)
+  rating      Float?
+  ratingCount Int?
+
+  // Rendu 3D du flacon
+  bottleShape BottleShape @default(RECTANGLE)
+  liquidColor String      @default("#E8C98A")
+  capColor    String      @default("#1A1A1A")
+  model3dUrl  String? // modèle sur mesure pour les flacons vedettes
+
+  notes   FragranceNote[]
+  accords FragranceAccord[]
+  links   PurchaseLink[]
+
+  dupes      Dupe[] @relation("OriginalDupes")
+  inspiredBy Dupe[] @relation("DupeOf")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([brandId])
+  @@index([gender])
+}
+
+model Note {
+  id         String          @id @default(cuid())
+  name       String          @unique
+  slug       String          @unique
+  fragrances FragranceNote[]
+}
+
+model FragranceNote {
+  fragranceId String
+  fragrance   Fragrance @relation(fields: [fragranceId], references: [id], onDelete: Cascade)
+  noteId      String
+  note        Note      @relation(fields: [noteId], references: [id])
+  level       NoteLevel
+
+  @@id([fragranceId, noteId, level])
+  @@index([noteId])
+}
+
+model Accord {
+  id         String            @id @default(cuid())
+  name       String            @unique
+  slug       String            @unique
+  color      String? // couleur d'affichage dans l'UI
+  fragrances FragranceAccord[]
+}
+
+model FragranceAccord {
+  fragranceId String
+  fragrance   Fragrance @relation(fields: [fragranceId], references: [id], onDelete: Cascade)
+  accordId    String
+  accord      Accord    @relation(fields: [accordId], references: [id])
+  strength    Float // 0 à 100
+
+  @@id([fragranceId, accordId])
+  @@index([accordId])
+}
+
+// ─── Dupes ───────────────────────────────────────────────
+
+// Lien entre un parfum original et un parfum qui s'en inspire
+model Dupe {
+  id         String       @id @default(cuid())
+  originalId String
+  original   Fragrance    @relation("OriginalDupes", fields: [originalId], references: [id], onDelete: Cascade)
+  dupeId     String
+  dupe       Fragrance    @relation("DupeOf", fields: [dupeId], references: [id], onDelete: Cascade)
+  similarity Float? // score calculé (0 à 100) par le moteur de similarité
+  ratings    DupeRating[]
+  createdAt  DateTime     @default(now())
+
+  @@unique([originalId, dupeId])
+  @@index([dupeId])
+}
+
+// ─── Achat ───────────────────────────────────────────────
+
+model Retailer {
+  id      String         @id @default(cuid())
+  name    String         @unique
+  website String
+  country String?
+  links   PurchaseLink[]
+}
+
+model PurchaseLink {
+  id          String    @id @default(cuid())
+  fragranceId String
+  fragrance   Fragrance @relation(fields: [fragranceId], references: [id], onDelete: Cascade)
+  retailerId  String
+  retailer    Retailer  @relation(fields: [retailerId], references: [id])
+  url         String
+  price       Decimal   @db.Decimal(10, 2)
+  currency    String    @default("EUR") @db.Char(3)
+  sizeMl      Int
+  inStock     Boolean   @default(true)
+  updatedAt   DateTime  @updatedAt
+
+  @@index([fragranceId])
+}
+
+// ─── Utilisateurs ────────────────────────────────────────
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  displayName  String
+  ratings      DupeRating[]
+  createdAt    DateTime     @default(now())
+}
+
+// Avis d'un utilisateur sur un dupe, chaque critère noté sur 10
+model DupeRating {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dupeId     String
+  dupe       Dupe     @relation(fields: [dupeId], references: [id], onDelete: Cascade)
+  similarity Int
+  strength   Int
+  longevity  Int
+  sillage    Int
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, dupeId])
 }
