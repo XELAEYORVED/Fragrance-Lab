@@ -19,29 +19,29 @@ for en, fr in BASE.items():
 
 # Choix manuels : notes abstraites ou ambiguës, illustrées par ce qu'elles évoquent
 OVERRIDES = {
-    "Musc": "Cotton", "Musc blanc": "Cotton", "Ambre": "Amber", "Ambre blanc": "Amber", "Ambre gris": "Ambergris",
+    "Musc": "Cotton", "Musc blanc": "Cotton", "Ambre": "commons:File:Amber Bernstein many stones.jpg", "Ambre blanc": "commons:File:Amber Bernstein many stones.jpg", "Ambre gris": "Ambergris",
     "Ambroxan": "Ambergris", "Cuir": "Leather", "Cuir blanc": "Leather", "Daim": "Suede", "Oud": "Agarwood",
     "Aldéhydes": "Soap bubble", "Notes marines": "Sea", "Notes aquatiques": "Water", "Note solaire": "Sunlight",
     "Notes boisées": "Wood", "Bois": "Wood", "Bois secs": "Driftwood", "Bois précieux": "Ebony", "Bois blonds": "Birch",
-    "Bois ambré": "Amber", "Notes vertes": "Leaf", "Feuilles vertes": "Leaf", "Herbe": "Poaceae", "Épices": "Spice",
+    "Bois ambré": "commons:File:Amber Bernstein many stones.jpg", "Notes vertes": "Leaf", "Feuilles vertes": "Leaf", "Herbe": "Poaceae", "Épices": "Spice",
     "Fruits": "Fruit", "Notes fruitées": "Fruit", "Fruits rouges": "Berry", "Fruits secs": "Dried fruit",
     "Notes florales": "Flower", "Fleurs": "Flower", "Fleurs blanches": "Jasminum", "Agrumes": "Citrus",
     "Notes poudrées": "Face powder", "Notes animales": "Civet", "Notes cuirées": "Leather", "Résines": "Resin",
     "Accord aérien": "Cloud", "Iso E Super": "Wood", "Cashmeran": "Cashmere wool", "Bois de cachemire": "Cashmere wool",
-    "Cachemire": "Cashmere wool", "Hédione": "Jasminum", "Coumarine": "Tonka bean", "Akigalawood": "Patchouli",
-    "Fève tonka": "Tonka bean", "Mousse de chêne": "Evernia prunastri", "Mousse d'arbre": "Pseudevernia furfuracea",
+    "Cachemire": "Cashmere wool", "Hédione": "Jasminum", "Coumarine": "commons:File:Tonka Beans.jpg", "Akigalawood": "Patchouli",
+    "Fève tonka": "commons:File:Tonka Beans.jpg", "Mousse de chêne": "Evernia prunastri", "Mousse d'arbre": "Pseudevernia furfuracea",
     "Mousse": "Moss", "Gaïac": "Guaiacum officinale", "Labdanum": "Cistus ladanifer", "Ciste": "Cistus",
     "Benjoin": "Benzoin (resin)", "Encens": "Frankincense", "Myrrhe": "Myrrh", "Opoponax": "Opopanax",
     "Styrax": "Liquidambar orientalis", "Héliotrope": "Heliotropium arborescens", "Ylang-ylang": "Cananga odorata",
     "Muguet": "Convallaria majalis", "Néroli": "Orange blossom", "Fleur d'oranger": "Orange blossom",
-    "Petit-grain": "Bitter orange", "Iris": "Iris germanica", "Racine d'iris": "Orris root", "Beurre d'iris": "Orris root",
+    "Petit-grain": "Bitter orange", "Iris": "Iris germanica", "Racine d'iris": "Iris germanica", "Beurre d'iris": "Iris germanica",
     "Tubéreuse": "Polianthes tuberosa", "Œillet": "Dianthus caryophyllus", "Freesia": "Freesia", "Pivoine": "Paeonia",
     "Gardénia": "Gardenia jasminoides", "Osmanthus": "Osmanthus fragrans", "Frangipanier": "Plumeria",
     "Fleur de tilleul": "Tilia", "Ambrette": "Abelmoschus moschatus", "Graine d'ambrette": "Abelmoschus moschatus",
     "Cypriol": "Cyperus scariosus", "Nagarmotha": "Cyperus scariosus", "Papyrus": "Cyperus papyrus",
     "Davana": "Artemisia pallens", "Civette": "Civet", "Castoréum": "Castoreum", "Élémi": "Elemi",
     "Baume de Tolu": "Myroxylon balsamum", "Baume du Pérou": "Balsam of Peru", "Mastic": "Pistacia lentiscus",
-    "Santal": "Santalum album", "Cèdre": "Cedrus", "Vétiver": "Vetiver", "Patchouli": "Pogostemon cablin",
+    "Santal": "Santalum album", "Cèdre": "Cedrus", "Vétiver": "commons:File:Vetiveria zizanoides dsc07810.jpg", "Patchouli": "Pogostemon cablin",
     "Bergamote": "Bergamot orange", "Mandarine": "Mandarin orange", "Citron": "Lemon", "Citron vert": "Lime (fruit)",
     "Pamplemousse": "Grapefruit", "Cédrat": "Citron", "Yuzu": "Yuzu", "Orange amère": "Bitter orange",
     "Cardamome": "Cardamom", "Poivre rose": "Schinus molle", "Poivre": "Black pepper", "Poivre noir": "Black pepper",
@@ -120,8 +120,30 @@ def api(params):
     return {}
 
 
+def commons_image(query):
+    """Photo de Wikimedia Commons : fichier précis (« File:… ») ou première image trouvée par la recherche."""
+    params = {"action": "query", "format": "json", "prop": "imageinfo", "iiprop": "url", "iiurlwidth": 400}
+    if query.startswith("File:"):
+        params["titles"] = query
+    else:
+        params.update(generator="search", gsrsearch=f"{query} filetype:bitmap", gsrnamespace=6, gsrlimit=1)
+    url = "https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode(params)
+    try:
+        r = json.load(urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20))
+    except Exception:
+        return None
+    pages = list(r.get("query", {}).get("pages", {}).values())
+    if not pages or "imageinfo" not in pages[0]:
+        return None
+    info = pages[0]["imageinfo"][0]
+    return {"thumb": info["thumburl"], "page": info["descriptionurl"], "title": pages[0]["title"]}
+
+
 def find_image(term):
-    """Photo principale de la page Wikipédia la plus pertinente pour le terme."""
+    """Photo principale de la page Wikipédia la plus pertinente pour le terme.
+    Un terme « commons:… » cherche directement une photo précise sur Wikimedia Commons."""
+    if term.startswith("commons:"):
+        return commons_image(term[len("commons:"):])
     r = api({"action": "query", "titles": term, "redirects": 1, "prop": "pageimages|info", "piprop": "thumbnail",
              "pithumbsize": 400, "inprop": "url"})
     pages = list(r.get("query", {}).get("pages", {}).values())
@@ -144,7 +166,9 @@ def slugify(s):
 def main():
     notes = json.load(open(sys.argv[1]))
     os.makedirs(OUT_DIR, exist_ok=True)
-    by_base, result = {}, {}
+    by_base = {}
+    # Mise à jour du fichier existant : on peut relancer le script sur quelques notes seulement
+    result = json.load(open(OUT_JSON)) if os.path.exists(OUT_JSON) else {}
     for name, count in notes:
         base, term = base_of(name)
         if not term:
@@ -168,6 +192,8 @@ def main():
         info = by_base[base]
         if info:
             result[name] = {"imageUrl": info["imageUrl"], "source": info["page"], "subject": info["title"]}
+        else:
+            result.pop(name, None)  # plus de photo valable : on retire l'ancienne
     json.dump(result, open(OUT_JSON, "w"), ensure_ascii=False, indent=1)
     covered = sum(c for n, c in notes if n in result)
     print(f"{len(result)}/{len(notes)} notes illustrées, {len({v['imageUrl'] for v in result.values()})} images, "
