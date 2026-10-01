@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import BottlePhoto from "@/components/BottlePhoto";
 import BottleThumb from "@/components/BottleThumb";
 import BottleViewer from "@/components/BottleViewer";
+import Reveal from "@/components/Reveal";
 import {
   genderLabel,
   getFragrance,
@@ -26,24 +26,19 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
     <main className="mx-auto max-w-6xl space-y-4 px-4 pt-10 pb-20">
       {/* En-tête du parfum */}
       <section className="grid gap-4 md:grid-cols-[1fr_1.4fr]">
-        <div className="glass relative overflow-hidden rounded-[2.5rem]">
-          {fragrance.imageUrl ? (
-            <BottlePhoto className="aspect-[4/5] w-full" src={fragrance.imageUrl} alt={fragrance.name} />
-          ) : (
-            <>
-              <BottleViewer
-                className="aspect-[4/5] w-full"
-                shape={fragrance.bottleShape}
-                liquidColor={fragrance.liquidColor}
-                capColor={fragrance.capColor}
-              />
-              <p className="pointer-events-none absolute inset-x-0 bottom-5 text-center text-xs text-muted">
-                Faites pivoter · molette pour zoomer
-              </p>
-            </>
-          )}
-        </div>
-        <div className="glass animate-rise rounded-[2.5rem] p-8 md:p-12">
+        <Reveal className="glass relative overflow-hidden rounded-[2.5rem]">
+          <BottleViewer
+            className="aspect-[4/5] w-full"
+            shape={fragrance.bottleShape}
+            liquidColor={fragrance.liquidColor}
+            capColor={fragrance.capColor}
+            imageUrl={fragrance.imageUrl}
+          />
+          <p className="pointer-events-none absolute inset-x-0 bottom-5 text-center text-xs text-muted">
+            Faites tourner le flacon · molette pour zoomer
+          </p>
+        </Reveal>
+        <Reveal className="glass rounded-[2.5rem] p-8 md:p-12">
           <Link href={`/marques/${fragrance.brand.slug}`} className="text-sm font-medium text-accent">
             {fragrance.brand.name}
           </Link>
@@ -66,27 +61,27 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
             </Link>
           ))}
           <dl className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <Stat label="Tenue" value={fragrance.longevity ? `${fragrance.longevity}/10` : "—"} />
-            <Stat label="Sillage" value={fragrance.sillage ? `${fragrance.sillage}/10` : "—"} />
-            <Stat label="Saisons" value={fragrance.seasons.map((s) => seasonLabel[s]).join(", ")} />
-            <Stat label="Moment" value={fragrance.timesOfDay.map((t) => timeLabel[t]).join(", ")} />
+            <Stat index={0} label="Tenue" value={fragrance.longevity ? `${fragrance.longevity}/10` : "—"} />
+            <Stat index={1} label="Sillage" value={fragrance.sillage ? `${fragrance.sillage}/10` : "—"} />
+            <Stat index={2} label="Saisons" value={fragrance.seasons.map((s) => seasonLabel[s]).join(", ")} />
+            <Stat index={3} label="Moment" value={fragrance.timesOfDay.map((t) => timeLabel[t]).join(", ")} />
           </dl>
-        </div>
+        </Reveal>
       </section>
 
       {/* Pyramide et accords */}
       <section className="grid gap-4 md:grid-cols-2">
-        <div className="glass rounded-[2.5rem] p-8 md:p-10">
+        <Reveal className="glass rounded-[2.5rem] p-8 md:p-10">
           <SectionTitle>Pyramide olfactive</SectionTitle>
           <div className="space-y-5">
-            {levels.map((level) => (
+            {levels.map((level, li) => (
               <div key={level} className="grid grid-cols-[3.5rem_1fr] gap-3">
                 <span className="pt-1.5 text-xs font-medium text-muted">{levelLabel[level]}</span>
                 <div className="flex flex-wrap gap-2">
                   {fragrance.notes
                     .filter((n) => n.level === level)
-                    .map((n) => (
-                      <span key={n.note.slug} className="glass-pill px-3 py-1 text-sm">
+                    .map((n, j) => (
+                      <span key={n.note.slug} className="glass-pill reveal-item px-3 py-1 text-sm" style={{ "--i": li * 3 + j } as React.CSSProperties}>
                         {n.note.name}
                       </span>
                     ))}
@@ -94,25 +89,25 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
               </div>
             ))}
           </div>
-        </div>
-        <div className="glass rounded-[2.5rem] p-8 md:p-10">
+        </Reveal>
+        <Reveal className="glass rounded-[2.5rem] p-8 md:p-10">
           <SectionTitle>Accords dominants</SectionTitle>
           <AccordBars fragrance={fragrance} />
-        </div>
+        </Reveal>
       </section>
 
       {/* Dupes */}
       {dupes.length > 0 && (
         <section className="space-y-4 pt-12">
-          <div className="px-2">
+          <Reveal className="px-2">
             <p className="text-sm font-medium text-accent">Alternatives</p>
             <h2 className="mt-1 text-4xl font-semibold tracking-tight">
               {dupes.length} dupe{dupes.length > 1 ? "s" : ""} de {fragrance.name}
             </h2>
-          </div>
+          </Reveal>
 
           {/* Tableau récapitulatif */}
-          <div className="glass overflow-x-auto rounded-[2rem] px-6 py-2">
+          <Reveal className="glass overflow-x-auto rounded-[2rem] px-6 py-2">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="text-xs text-muted">
                 <tr className="border-b border-line">
@@ -124,10 +119,11 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
                 </tr>
               </thead>
               <tbody>
-                <SummaryRow fragrance={fragrance} label="Original" />
-                {dupes.map(({ id, dupe, notes }) => (
+                <SummaryRow index={0} fragrance={fragrance} label="Original" />
+                {dupes.map(({ id, dupe, notes }, i) => (
                   <SummaryRow
                     key={id}
+                    index={i + 1}
                     fragrance={dupe}
                     shared={`${notes.sharedTotal} / ${notes.originalTotal}`}
                     ratio={notes.sharedTotal / notes.originalTotal}
@@ -135,11 +131,11 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
                 ))}
               </tbody>
             </table>
-          </div>
+          </Reveal>
 
           {/* Comparaison détaillée */}
           {dupes.map(({ id, dupe, notes }) => (
-            <article key={id} className="glass rounded-[2.5rem] p-8 md:p-10">
+            <Reveal as="article" key={id} className="glass rounded-[2.5rem] p-8 md:p-10">
               <header className="mb-8 flex flex-wrap items-center gap-6">
                 <div className="flex items-end gap-3">
                   <BottleThumb className="w-16" fragrance={fragrance} />
@@ -159,18 +155,18 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
 
               <div className="grid gap-10 lg:grid-cols-2">
                 <div className="space-y-5">
-                  {notes.byLevel.map(({ level, shared, onlyOriginal, onlyDupe }) => (
+                  {notes.byLevel.map(({ level, shared, onlyOriginal, onlyDupe }, li) => (
                     <div key={level} className="grid grid-cols-[3.5rem_1fr] gap-3">
                       <span className="pt-1.5 text-xs font-medium text-muted">{levelLabel[level]}</span>
                       <div className="flex flex-wrap gap-2 text-sm">
                         {shared.map((n) => (
-                          <span key={n} className="rounded-full bg-accent px-3 py-1 text-white dark:text-background">{n}</span>
+                          <span key={n} className="reveal-item rounded-full bg-accent px-3 py-1 text-white dark:text-background" style={{ "--i": li * 4 } as React.CSSProperties}>{n}</span>
                         ))}
                         {onlyOriginal.map((n) => (
-                          <span key={n} className="glass-pill px-3 py-1 text-muted line-through">{n}</span>
+                          <span key={n} className="glass-pill reveal-item px-3 py-1 text-muted line-through" style={{ "--i": li * 4 + 1 } as React.CSSProperties}>{n}</span>
                         ))}
                         {onlyDupe.map((n) => (
-                          <span key={n} className="rounded-full border border-dashed border-accent px-3 py-1 text-accent">+ {n}</span>
+                          <span key={n} className="reveal-item rounded-full border border-dashed border-accent px-3 py-1 text-accent" style={{ "--i": li * 4 + 2 } as React.CSSProperties}>+ {n}</span>
                         ))}
                       </div>
                     </div>
@@ -183,14 +179,16 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
                 </div>
 
                 <div className="space-y-3">
-                  {compareAccords(fragrance, dupe).map((a) => (
+                  {compareAccords(fragrance, dupe).map((a, i) => (
                     <div key={a.name}>
                       <div className="mb-1 flex justify-between text-xs text-muted">
                         <span className="text-foreground">{a.name}</span>
                         <span>{Math.round(a.original)} % · {Math.round(a.dupe)} %</span>
                       </div>
-                      <Bar value={a.original} className="bg-foreground/60" />
-                      <Bar value={a.dupe} className="mt-1 bg-accent" />
+                      <Bar index={i} value={a.original} className="bg-foreground/60" />
+                      <div className="mt-1">
+                        <Bar index={i + 1} value={a.dupe} className="bg-accent" />
+                      </div>
                     </div>
                   ))}
                   <p className="flex gap-5 pt-1 text-xs text-muted">
@@ -199,7 +197,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
                   </p>
                 </div>
               </div>
-            </article>
+            </Reveal>
           ))}
         </section>
       )}
@@ -211,19 +209,22 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="mb-6 text-2xl font-semibold tracking-tight">{children}</h2>;
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, index }: { label: string; value: string; index: number }) {
   return (
-    <div className="glass-strong rounded-2xl px-4 py-3">
+    <div className="glass-strong reveal-item rounded-2xl px-4 py-3" style={{ "--i": index + 4 } as React.CSSProperties}>
       <dt className="text-[11px] text-muted">{label}</dt>
       <dd className="mt-0.5 text-sm font-medium">{value || "—"}</dd>
     </div>
   );
 }
 
-function Bar({ value, className }: { value: number; className: string }) {
+function Bar({ value, className, index = 0 }: { value: number; className: string; index?: number }) {
   return (
     <div className="h-1.5 overflow-hidden rounded-full bg-line">
-      <div className={`h-full rounded-full ${className}`} style={{ width: `${value}%` }} />
+      <div
+        className={`bar-fill h-full rounded-full ${className}`}
+        style={{ width: `${value}%`, "--i": index } as React.CSSProperties}
+      />
     </div>
   );
 }
@@ -231,13 +232,13 @@ function Bar({ value, className }: { value: number; className: string }) {
 function AccordBars({ fragrance }: { fragrance: FragranceProfile }) {
   return (
     <div className="space-y-4">
-      {fragrance.accords.map((a) => (
+      {fragrance.accords.map((a, i) => (
         <div key={a.accord.slug}>
           <div className="mb-1.5 flex justify-between text-sm">
             <span>{a.accord.name}</span>
             <span className="text-muted">{Math.round(a.strength)} %</span>
           </div>
-          <Bar value={a.strength} className="bg-gradient-to-r from-accent to-[var(--blob-2)]" />
+          <Bar index={i} value={a.strength} className="bg-gradient-to-r from-accent to-[var(--blob-2)]" />
         </div>
       ))}
     </div>
@@ -249,14 +250,16 @@ function SummaryRow({
   label,
   shared,
   ratio,
+  index,
 }: {
+  index: number;
   fragrance: FragranceProfile;
   label?: string;
   shared?: string;
   ratio?: number;
 }) {
   return (
-    <tr className="border-b border-line last:border-0">
+    <tr className="reveal-item border-b border-line last:border-0" style={{ "--i": index * 2 } as React.CSSProperties}>
       <td className="py-4">
         <Link href={`/parfum/${fragrance.slug}`} className="group flex items-center gap-3">
           <BottleThumb className="w-10" fragrance={fragrance} />
@@ -271,7 +274,7 @@ function SummaryRow({
         {shared ? (
           <div className="flex items-center gap-3">
             <div className="w-20">
-              <Bar value={(ratio ?? 0) * 100} className="bg-accent" />
+              <Bar index={index * 2 + 2} value={(ratio ?? 0) * 100} className="bg-accent" />
             </div>
             <span>{shared}</span>
           </div>

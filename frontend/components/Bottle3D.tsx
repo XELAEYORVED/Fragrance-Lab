@@ -1,17 +1,21 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Environment, Float, Lightformer, OrbitControls, RoundedBox } from "@react-three/drei";
-import { useMemo } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import type { BottleShape } from "@/lib/api";
+import PhotoFlacon from "./PhotoFlacon";
 
-// Flacon 3D généré à partir de la forme et des couleurs du parfum
+// Scène 3D du flacon : reconstruit depuis sa photo si elle existe, sinon généré
+// à partir de la forme et des couleurs du parfum
 
 export type Bottle3DProps = {
   shape: BottleShape;
   liquidColor: string;
   capColor: string;
+  imageUrl?: string | null;
 };
 
 type Dims = { width: number; height: number; depth: number };
@@ -143,9 +147,93 @@ function Flacon({ shape, liquidColor, capColor }: Bottle3DProps) {
   );
 }
 
+// Entrée en scène : le flacon monte, grandit et pivote jusqu'à faire face
+function Intro({ enabled, children }: { enabled: boolean; children: React.ReactNode }) {
+  const ref = useRef<THREE.Group>(null);
+
+  useFrame((_, delta) => {
+    const group = ref.current;
+    if (!group) return;
+    const step = Math.min(delta, 1 / 30);
+    group.position.y = THREE.MathUtils.damp(group.position.y, 0, 3.2, step);
+    group.rotation.y = THREE.MathUtils.damp(group.rotation.y, 0, 2.6, step);
+    const scale = THREE.MathUtils.damp(group.scale.x, 1, 3.6, step);
+    group.scale.setScalar(scale);
+  });
+
+  return (
+    <group
+      ref={ref}
+      position={[0, enabled ? -0.7 : 0, 0]}
+      rotation={[0, enabled ? -Math.PI * 0.85 : 0, 0]}
+      scale={enabled ? 0.82 : 1}
+    >
+      {children}
+    </group>
+  );
+}
+
+// Bande de lumière qui balaie le verre toutes les quelques secondes, comme sur une photo produit
+function Glint({ enabled }: { enabled: boolean }) {
+  const ref = useRef<THREE.Mesh>(null);
+  const PERIOD = 6.5;
+  const SWEEP = 1.8;
+
+  useFrame(({ clock }) => {
+    if (!ref.current) return;
+    const t = (clock.elapsedTime + 1.2) % PERIOD;
+    const progress = enabled && t < SWEEP ? t / SWEEP : -1;
+    // Accélération puis ralentissement (easeInOutCubic)
+    const eased = progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
+    ref.current.position.x = progress < 0 ? -9 : -6 + eased * 12;
+  });
+
+  return <Lightformer ref={ref} intensity={9} position={[-9, 0.5, 3.5]} rotation-z={0.35} scale={[0.6, 9, 1]} />;
+}
+
+// Rotation automatique qui s'arrête dès qu'on attrape le flacon et reprend en douceur ensuite
+function Controls({ enabled }: { enabled: boolean }) {
+  const ref = useRef<OrbitControlsImpl>(null);
+  const resumeAt = useRef(0); // horodatage (ms) à partir duquel la rotation reprend
+  const SPEED = 1.1;
+  const RESUME_DELAY = 2500;
+
+  useFrame((_, delta) => {
+    const controls = ref.current;
+    if (!controls) return;
+    const target = enabled && performance.now() >= resumeAt.current ? SPEED : 0;
+    controls.autoRotateSpeed = THREE.MathUtils.damp(controls.autoRotateSpeed, target, 2.2, Math.min(delta, 1 / 30));
+  });
+
+  return (
+    <OrbitControls
+      ref={ref}
+      makeDefault
+      enablePan={false}
+      enableDamping
+      dampingFactor={0.07}
+      rotateSpeed={0.8}
+      zoomSpeed={0.6}
+      minDistance={4}
+      maxDistance={9}
+      minPolarAngle={Math.PI / 4}
+      maxPolarAngle={Math.PI / 1.7}
+      autoRotate
+      autoRotateSpeed={0}
+      onStart={() => {
+        resumeAt.current = Infinity;
+      }}
+      onEnd={() => {
+        resumeAt.current = performance.now() + RESUME_DELAY;
+      }}
+    />
+  );
+}
+
 export default function Bottle3D(props: Bottle3DProps) {
-  const reducedMotion =
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [motion] = useState(
+    () => typeof window === "undefined" || !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
 
   return (
     <Canvas
@@ -156,8 +244,8 @@ export default function Bottle3D(props: Bottle3DProps) {
         gl.localClippingEnabled = true;
       }}
     >
-      {/* Studio lumineux sans fichier externe */}
-      <Environment resolution={256}>
+      {/* Studio lumineux sans fichier externe, recalculé en continu pour le balayage de lumière */}
+      <Environment resolution={256} frames={motion ? Infinity : 1}>
         <Lightformer intensity={2} position={[0, 5, 0]} rotation-x={Math.PI / 2} scale={[10, 10, 1]} />
         {/* Bandes verticales qui dessinent les reflets du verre */}
         <Lightformer intensity={6} position={[-2.5, 0.5, 3]} scale={[0.35, 7, 1]} />
@@ -165,25 +253,25 @@ export default function Bottle3D(props: Bottle3DProps) {
         <Lightformer intensity={1.5} position={[-5, 0, -1]} rotation-y={Math.PI / 2} scale={[4, 6, 1]} />
         <Lightformer intensity={1.5} position={[5, 0, -1]} rotation-y={-Math.PI / 2} scale={[4, 6, 1]} />
         <Lightformer intensity={2} color={props.liquidColor} position={[0, -3, -4]} scale={[12, 4, 1]} />
+        <Glint enabled={motion} />
       </Environment>
       <ambientLight intensity={0.5} />
       <directionalLight position={[3, 5, 4]} intensity={1.2} />
 
-      <Float speed={reducedMotion ? 0 : 1.6} rotationIntensity={0.25} floatIntensity={0.6}>
-        <Flacon {...props} />
-      </Float>
+      <Intro enabled={motion}>
+        <Float speed={motion ? 1.4 : 0} rotationIntensity={0.18} floatIntensity={0.5} floatingRange={[-0.06, 0.06]}>
+          {props.imageUrl ? (
+            <Suspense fallback={null}>
+              <PhotoFlacon src={props.imageUrl} shape={props.shape} />
+            </Suspense>
+          ) : (
+            <Flacon {...props} />
+          )}
+        </Float>
+      </Intro>
 
       <ContactShadows position={[0, -1.55, 0]} opacity={0.35} scale={6} blur={2.6} far={3} />
-
-      <OrbitControls
-        enablePan={false}
-        minDistance={4}
-        maxDistance={9}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={Math.PI / 1.7}
-        autoRotate={!reducedMotion}
-        autoRotateSpeed={1.2}
-      />
+      <Controls enabled={motion} />
     </Canvas>
   );
 }

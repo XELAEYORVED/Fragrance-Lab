@@ -6,9 +6,9 @@ export default function FragranceCard({ fragrance: f }: { fragrance: FragranceSu
   return (
     <Link
       href={`/parfum/${f.slug}`}
-      className="glass group flex flex-col rounded-[2rem] p-7 transition duration-500 hover:-translate-y-1"
+      className="glass group flex h-full flex-col rounded-[2rem] p-7 transition duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[0_24px_60px_-20px_var(--glass-shadow)] active:scale-[0.99]"
     >
-      <div className="mx-auto mb-6 w-32 transition-transform duration-700 group-hover:-translate-y-2 group-hover:scale-105">
+      <div className="mx-auto mb-6 w-32 transition-transform duration-700 ease-out group-hover:-translate-y-2 group-hover:scale-105 group-hover:-rotate-2">
         <BottleThumb fragrance={f} />
       </div>
       <p className="text-xs text-muted">{f.brand.name}</p>
@@ -22,7 +22,8 @@ export default function FragranceCard({ fragrance: f }: { fragrance: FragranceSu
       </div>
       {f._count.dupes > 0 && (
         <p className="mt-5 text-sm font-medium text-accent">
-          {f._count.dupes} dupe{f._count.dupes > 1 ? "s" : ""} →
+          {f._count.dupes} dupe{f._count.dupes > 1 ? "s" : ""}{" "}
+          <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
         </p>
       )}
     </Link>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Reveal from "@/components/Reveal";
 import { getBrands } from "@/lib/api";
 
 export default async function BrandsPage() {
@@ -23,14 +24,14 @@ export default async function BrandsPage() {
 
       <div className="space-y-10">
         {[...groups].map(([letter, list]) => (
-          <section key={letter}>
+          <Reveal as="section" key={letter}>
             <h2 className="mb-3 px-2 text-sm font-semibold text-muted">{letter}</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {list.map((brand) => (
+              {list.map((brand, i) => (
+                <div key={brand.id} className="reveal-item" style={{ "--i": i } as React.CSSProperties}>
                 <Link
-                  key={brand.id}
                   href={`/marques/${brand.slug}`}
-                  className="glass group flex items-center gap-4 rounded-3xl p-5 transition duration-500 hover:-translate-y-0.5"
+                  className="glass group flex items-center gap-4 rounded-3xl p-5 transition duration-500 ease-out hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-20px_var(--glass-shadow)] active:scale-[0.99]"
                 >
                   <span className="glass-strong flex size-12 shrink-0 items-center justify-center rounded-2xl text-lg font-semibold">
                     {brand.name[0]}
@@ -45,11 +46,12 @@ export default async function BrandsPage() {
                         .join(" · ")}
                     </span>
                   </span>
-                  <span className="text-muted transition group-hover:translate-x-0.5 group-hover:text-accent">→</span>
+                  <span className="text-muted transition duration-300 group-hover:translate-x-1 group-hover:text-accent">→</span>
                 </Link>
+                </div>
               ))}
             </div>
-          </section>
+          </Reveal>
         ))}
       </div>
     </main>

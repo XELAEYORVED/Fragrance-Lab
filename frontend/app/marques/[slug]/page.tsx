@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import FragranceCard from "@/components/FragranceCard";
+import Reveal from "@/components/Reveal";
 import { getBrand } from "@/lib/api";
 
 export default async function BrandPage({ params }: PageProps<"/marques/[slug]">) {
@@ -27,11 +28,13 @@ export default async function BrandPage({ params }: PageProps<"/marques/[slug]">
         </div>
       </section>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {brand.fragrances.map((f) => (
-          <FragranceCard key={f.id} fragrance={f} />
+      <Reveal className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {brand.fragrances.map((f, i) => (
+          <div key={f.id} className="reveal-item" style={{ "--i": i } as React.CSSProperties}>
+            <FragranceCard fragrance={f} />
+          </div>
         ))}
-      </div>
+      </Reveal>
     </main>
   );
 }

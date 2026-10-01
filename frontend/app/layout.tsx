@@ -18,6 +18,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fr" className={`${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col">
+        {/* Sans JavaScript, le contenu reste visible sans animation */}
+        <noscript>
+          <style>{`.reveal,.reveal-item{opacity:1!important;transform:none!important}.bar-fill{transform:none!important}`}</style>
+        </noscript>
         <div className="ambient" aria-hidden>
           <span />
           <span />
