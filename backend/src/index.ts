@@ -65,6 +65,37 @@ app.get("/api/fragrances/:slug", async (req, res) => {
   res.json(fragrance);
 });
 
+// Liste des marques avec leur nombre de parfums
+app.get("/api/brands", async (req, res) => {
+  const brands = await prisma.brand.findMany({
+    include: { _count: { select: { fragrances: true } } },
+    orderBy: { name: "asc" },
+  });
+  res.json(brands);
+});
+
+// Détail d'une marque avec tous ses parfums
+app.get("/api/brands/:slug", async (req, res) => {
+  const brand = await prisma.brand.findUnique({
+    where: { slug: req.params.slug },
+    include: {
+      fragrances: {
+        include: {
+          brand: true,
+          accords: { include: { accord: true }, orderBy: { strength: "desc" }, take: 3 },
+          _count: { select: { dupes: true } },
+        },
+        orderBy: { name: "asc" },
+      },
+    },
+  });
+  if (!brand) {
+    res.status(404).json({ error: "Marque introuvable" });
+    return;
+  }
+  res.json(brand);
+});
+
 // Express 5 transmet ici les erreurs des routes async
 app.use((error: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(error);
