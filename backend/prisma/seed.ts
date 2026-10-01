@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Concentration, Gender, Season, TimeOfDay } from "@prisma/client";
 import { brandPrices } from "./data/prices";
@@ -316,6 +316,12 @@ const catalog: CatalogEntry[] = JSON.parse(
   readFileSync(join(__dirname, "data", "catalog.json"), "utf-8"),
 );
 
+// Photo de chaque ingrédient (générée par scripts/catalog/note_images.py)
+const noteImagesPath = join(__dirname, "data", "note-images.json");
+const noteImages: Record<string, { imageUrl: string; source: string }> = existsSync(noteImagesPath)
+  ? JSON.parse(readFileSync(noteImagesPath, "utf-8"))
+  : {};
+
 // Insertion par paquets (bien plus rapide que des créations une par une sur Neon)
 async function inChunks<T>(items: T[], insert: (chunk: T[]) => Promise<unknown>, size = 1000) {
   for (let i = 0; i < items.length; i += size) await insert(items.slice(i, i + size));
@@ -350,7 +356,15 @@ async function main() {
   const brandIds = new Map((await prisma.brand.findMany()).map((b) => [b.name, b.id]));
 
   const noteNames = new Set(all.flatMap((f) => [...f.top, ...f.heart, ...f.base]));
-  await prisma.note.createMany({ data: [...noteNames].map((name) => ({ name, slug: slugify(name) })), skipDuplicates: true });
+  await prisma.note.createMany({
+    data: [...noteNames].map((name) => ({
+      name,
+      slug: slugify(name),
+      imageUrl: noteImages[name]?.imageUrl,
+      imageSource: noteImages[name]?.source,
+    })),
+    skipDuplicates: true,
+  });
   const accordNames = new Set(all.flatMap((f) => Object.keys(f.accords ?? {})));
   await prisma.accord.createMany({ data: [...accordNames].map((name) => ({ name, slug: slugify(name) })), skipDuplicates: true });
   const noteIds = new Map((await prisma.note.findMany()).map((n) => [n.name, n.id]));

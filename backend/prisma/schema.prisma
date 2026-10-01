@@ -114,10 +114,12 @@ model Fragrance {
 }
 
 model Note {
-  id         String          @id @default(cuid())
-  name       String          @unique
-  slug       String          @unique
-  fragrances FragranceNote[]
+  id          String          @id @default(cuid())
+  name        String          @unique
+  slug        String          @unique
+  imageUrl    String? // photo de l'ingrédient (frontend/public/notes)
+  imageSource String? // page Wikipédia d'où vient la photo (crédit, licence libre)
+  fragrances  FragranceNote[]
 }
 
 model FragranceNote {
