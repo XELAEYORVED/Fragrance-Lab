@@ -89,6 +89,7 @@ model Fragrance {
   bottleShape BottleShape @default(RECTANGLE)
   liquidColor String      @default("#E8C98A")
   capColor    String      @default("#1A1A1A")
+  imageUrl    String? // photo détourée du flacon (frontend/public/bottles)
   model3dUrl  String? // modèle sur mesure pour les flacons vedettes
 
   notes   FragranceNote[]
