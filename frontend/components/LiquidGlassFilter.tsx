@@ -13,20 +13,18 @@ export default function LiquidGlassFilter() {
     const brands = (navigator as Navigator & { userAgentData?: { brands: { brand: string }[] } }).userAgentData?.brands;
     if (brands?.some((b) => b.brand === "Chromium")) root.classList.add("refraction");
 
-    // Le reflet du verre suit le pointeur (une mise à jour par image au plus)
-    let frame = 0;
-    const onMove = (event: PointerEvent) => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => {
-        root.style.setProperty("--lx", `${event.clientX}px`);
-        root.style.setProperty("--ly", `${event.clientY}px`);
-        frame = 0;
-      });
+    // Pendant le défilement, la réfraction est mise en pause (data-scrolling) pour rester fluide
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onScroll = () => {
+      if (!root.dataset.scrolling) root.dataset.scrolling = "1";
+      clearTimeout(timer);
+      timer = setTimeout(() => delete root.dataset.scrolling, 180);
     };
-    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      window.removeEventListener("pointermove", onMove);
-      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(timer);
+      delete root.dataset.scrolling;
       root.classList.remove("refraction");
     };
   }, []);

@@ -29,12 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <style>{`.reveal,.reveal-item{opacity:1!important;transform:none!important}.bar-fill{transform:none!important}`}</style>
         </noscript>
         <LiquidGlassFilter />
-        <div className="ambient" aria-hidden>
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
+        <div className="ambient" aria-hidden />
         <Header />
         <div className="flex-1">{children}</div>
         <footer className="px-4 pb-6">

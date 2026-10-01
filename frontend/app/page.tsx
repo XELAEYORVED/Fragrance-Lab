@@ -49,7 +49,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </div>
           <form
             action="/"
-            className="glass-pill reveal-item mx-auto mt-10 flex max-w-xl items-center py-1.5 pr-1.5 pl-6 focus-within:ring-2 focus-within:ring-accent/50"
+            className="glass-pill glass-backdrop reveal-item mx-auto mt-10 flex max-w-xl items-center py-1.5 pr-1.5 pl-6 focus-within:ring-2 focus-within:ring-accent/50"
             style={{ "--i": 5 } as React.CSSProperties}
           >
             <input
