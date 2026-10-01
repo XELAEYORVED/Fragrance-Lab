@@ -1,4 +1,4 @@
-import type { FragranceProfile, NoteLevel } from "./api";
+import { priceRange, type FragranceProfile, type NoteLevel } from "./api";
 
 // Comparaison factuelle des notes et accords de deux parfums.
 // Le score de ressemblance pondéré viendra du moteur de similarité côté backend.
@@ -38,7 +38,9 @@ export function compareAccords(original: FragranceProfile, dupe: FragranceProfil
     .sort((x, y) => y.original + y.dupe - (x.original + x.dupe));
 }
 
-export function lowestPrice(fragrance: FragranceProfile) {
+// Prix réel le plus bas si un lien d'achat existe, sinon la fourchette indicative
+export function displayPrice(fragrance: FragranceProfile) {
   const link = fragrance.links[0];
-  return link ? `${Number(link.price).toFixed(2)} ${link.currency}` : null;
+  if (link) return `${Number(link.price).toFixed(2)} ${link.currency}`;
+  return priceRange(fragrance);
 }

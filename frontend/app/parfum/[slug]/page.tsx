@@ -6,13 +6,14 @@ import BottleViewer from "@/components/BottleViewer";
 import Reveal from "@/components/Reveal";
 import {
   genderLabel,
+  savings,
   getFragrance,
   levelLabel,
   seasonLabel,
   timeLabel,
   type FragranceProfile,
 } from "@/lib/api";
-import { compareAccords, compareNotes, levels, lowestPrice } from "@/lib/compare";
+import { compareAccords, compareNotes, displayPrice, levels } from "@/lib/compare";
 
 export default async function FragrancePage({ params }: PageProps<"/parfum/[slug]">) {
   const { slug } = await params;
@@ -49,7 +50,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
           </Link>
           <h1 className="mt-2 text-5xl font-semibold tracking-tight md:text-6xl">{fragrance.name}</h1>
           <p className="mt-3 text-sm text-muted">
-            {[fragrance.year, genderLabel[fragrance.gender], fragrance.family]
+            {[fragrance.year, fragrance.gender && genderLabel[fragrance.gender], fragrance.family]
               .filter(Boolean)
               .join(" · ")}
           </p>
@@ -70,6 +71,12 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
             <Stat index={1} label="Sillage" value={fragrance.sillage ? `${fragrance.sillage}/10` : "—"} />
             <Stat index={2} label="Saisons" value={fragrance.seasons.map((s) => seasonLabel[s]).join(", ")} />
             <Stat index={3} label="Moment" value={fragrance.timesOfDay.map((t) => timeLabel[t]).join(", ")} />
+            <Stat
+              index={4}
+              label="Prix indicatif · 100 ml"
+              value={displayPrice(fragrance) ?? "—"}
+              className="col-span-2 sm:col-span-4"
+            />
           </dl>
         </Reveal>
       </section>
@@ -132,6 +139,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
                   <SummaryRow
                     key={id}
                     index={i + 1}
+                    saved={savings(fragrance, dupe)}
                     fragrance={dupe}
                     shared={`${notes.sharedTotal} / ${notes.originalTotal}`}
                     ratio={notes.sharedTotal / notes.originalTotal}
@@ -219,9 +227,9 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="mb-6 text-2xl font-semibold tracking-tight">{children}</h2>;
 }
 
-function Stat({ label, value, index }: { label: string; value: string; index: number }) {
+function Stat({ label, value, index, className }: { label: string; value: string; index: number; className?: string }) {
   return (
-    <div className="glass-strong reveal-item rounded-2xl px-4 py-3" style={{ "--i": index + 4 } as React.CSSProperties}>
+    <div className={`glass-strong reveal-item rounded-2xl px-4 py-3 ${className ?? ""}`} style={{ "--i": index + 4 } as React.CSSProperties}>
       <dt className="text-[11px] text-muted">{label}</dt>
       <dd className="mt-0.5 text-sm font-medium">{value || "—"}</dd>
     </div>
@@ -261,8 +269,10 @@ function SummaryRow({
   shared,
   ratio,
   index,
+  saved,
 }: {
   index: number;
+  saved?: number | null;
   fragrance: FragranceProfile;
   label?: string;
   shared?: string;
@@ -294,7 +304,10 @@ function SummaryRow({
       </td>
       <td className="py-4">{fragrance.longevity ? `${fragrance.longevity}/10` : "—"}</td>
       <td className="py-4">{fragrance.sillage ? `${fragrance.sillage}/10` : "—"}</td>
-      <td className="py-4 text-muted">{lowestPrice(fragrance) ?? "Bientôt"}</td>
+      <td className="py-4">
+        {displayPrice(fragrance) ?? <span className="text-muted">—</span>}
+        {saved != null && <span className="ml-2 rounded-full bg-accent px-2 py-0.5 text-[11px] font-medium text-white dark:text-background">−{saved} %</span>}
+      </td>
     </tr>
   );
 }

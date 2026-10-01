@@ -1,6 +1,6 @@
 import Link from "next/link";
 import BottleThumb from "@/components/BottleThumb";
-import type { FragranceSummary } from "@/lib/api";
+import { priceRange, type FragranceSummary } from "@/lib/api";
 
 export default function FragranceCard({ fragrance: f }: { fragrance: FragranceSummary }) {
   return (
@@ -20,6 +20,11 @@ export default function FragranceCard({ fragrance: f }: { fragrance: FragranceSu
           </span>
         ))}
       </div>
+      {priceRange(f) && (
+        <p className="mt-4 text-sm">
+          {priceRange(f)} <span className="text-xs text-muted">· indicatif, 100 ml</span>
+        </p>
+      )}
       {f._count.dupes > 0 && (
         <p className="mt-5 text-sm font-medium text-accent">
           {f._count.dupes} dupe{f._count.dupes > 1 ? "s" : ""}{" "}

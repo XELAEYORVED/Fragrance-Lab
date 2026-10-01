@@ -1,5 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import type { Season, TimeOfDay } from "@prisma/client";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import type { Concentration, Gender, Season, TimeOfDay } from "@prisma/client";
+import { brandPrices } from "./data/prices";
 import { nicheBrands, nicheFragrances, type NicheFragrance } from "./data/niche";
 
 const prisma = new PrismaClient();
@@ -298,6 +301,26 @@ function slugify(value: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+// Fiche du catalogue importé (voir prisma/data/catalog.json)
+type CatalogEntry = Omit<SeedFragrance, "gender" | "concentration" | "family" | "description"> & {
+  gender: Gender | null;
+  concentration: Concentration | null;
+  family?: string;
+  description?: string;
+  rating?: number | null;
+  ratingCount?: number | null;
+  imageUrl: string | null;
+};
+
+const catalog: CatalogEntry[] = JSON.parse(
+  readFileSync(join(__dirname, "data", "catalog.json"), "utf-8"),
+);
+
+// Insertion par paquets (bien plus rapide que des créations une par une sur Neon)
+async function inChunks<T>(items: T[], insert: (chunk: T[]) => Promise<unknown>, size = 1000) {
+  for (let i = 0; i < items.length; i += size) await insert(items.slice(i, i + size));
+}
+
 async function main() {
   // Repartir d'une base propre à chaque seed
   await prisma.dupeRating.deleteMany();
@@ -308,61 +331,72 @@ async function main() {
   await prisma.accord.deleteMany();
   await prisma.brand.deleteMany();
 
-  for (const brand of [...brands, ...nicheBrands]) {
-    const slug = slugify(brand.name);
-    await prisma.brand.create({ data: { ...brand, slug, logoUrl: brandLogos[slug] ?? null } });
-  }
+  const curated: CatalogEntry[] = [...fragrances, ...nicheFragrances].map((f) => ({
+    ...f,
+    imageUrl: `/bottles/${f.slug}.webp`,
+  }));
+  const all = [...curated, ...catalog];
 
-  const all: SeedFragrance[] = [...fragrances, ...nicheFragrances];
+  // Marques : fiches détaillées pour la sélection manuelle, nom seul pour le catalogue importé
+  const detailed = [...brands, ...nicheBrands];
+  const brandNames = new Set([...detailed.map((b) => b.name), ...all.map((f) => f.brand)]);
+  await prisma.brand.createMany({
+    data: [...brandNames].map((name) => {
+      const known = detailed.find((b) => b.name === name);
+      const slug = slugify(name);
+      return { name, slug, country: known?.country, website: known?.website, logoUrl: brandLogos[slug] ?? null };
+    }),
+  });
+  const brandIds = new Map((await prisma.brand.findMany()).map((b) => [b.name, b.id]));
 
-  // Notes et accords créés d'abord : un même parfum peut citer une note à deux étages
   const noteNames = new Set(all.flatMap((f) => [...f.top, ...f.heart, ...f.base]));
-  await prisma.note.createMany({ data: [...noteNames].map((name) => ({ name, slug: slugify(name) })) });
+  await prisma.note.createMany({ data: [...noteNames].map((name) => ({ name, slug: slugify(name) })), skipDuplicates: true });
   const accordNames = new Set(all.flatMap((f) => Object.keys(f.accords ?? {})));
-  await prisma.accord.createMany({ data: [...accordNames].map((name) => ({ name, slug: slugify(name) })) });
+  await prisma.accord.createMany({ data: [...accordNames].map((name) => ({ name, slug: slugify(name) })), skipDuplicates: true });
+  const noteIds = new Map((await prisma.note.findMany()).map((n) => [n.name, n.id]));
+  const accordIds = new Map((await prisma.accord.findMany()).map((a) => [a.name, a.id]));
 
-  for (const f of all) {
-    const { brand, top, heart, base, accords, dupeOf, ...data } = f;
-    const notes = [
-      ...top.map((name) => ({ name, level: "TOP" as const })),
-      ...heart.map((name) => ({ name, level: "HEART" as const })),
-      ...base.map((name) => ({ name, level: "BASE" as const })),
+  await inChunks(all, (chunk) =>
+    prisma.fragrance.createMany({
+      data: chunk.map(({ brand, top, heart, base, accords, dupeOf, ...data }) => {
+        const price = brandPrices[brand];
+        return { ...data, brandId: brandIds.get(brand)!, priceMin: price?.[0], priceMax: price?.[1] };
+      }),
+    }),
+  );
+  const fragranceIds = new Map((await prisma.fragrance.findMany({ select: { id: true, slug: true } })).map((f) => [f.slug, f.id]));
+
+  const links = all.flatMap((f) => {
+    const fragranceId = fragranceIds.get(f.slug)!;
+    return [
+      ...f.top.map((name) => ({ fragranceId, noteId: noteIds.get(name)!, level: "TOP" as const })),
+      ...f.heart.map((name) => ({ fragranceId, noteId: noteIds.get(name)!, level: "HEART" as const })),
+      ...f.base.map((name) => ({ fragranceId, noteId: noteIds.get(name)!, level: "BASE" as const })),
     ];
+  });
+  await inChunks(links, (chunk) => prisma.fragranceNote.createMany({ data: chunk, skipDuplicates: true }));
 
-    await prisma.fragrance.create({
-      data: {
-        ...data,
-        imageUrl: `/bottles/${data.slug}.webp`,
-        brand: { connect: { name: brand } },
-        notes: {
-          create: notes.map(({ name, level }) => ({ level, note: { connect: { name } } })),
-        },
-        accords: {
-          create: Object.entries(accords ?? {}).map(([name, strength]) => ({
-            strength,
-            accord: { connect: { name } },
-          })),
-        },
-      },
-    });
-  }
+  const strengths = all.flatMap((f) =>
+    Object.entries(f.accords ?? {}).map(([name, strength]) => ({
+      fragranceId: fragranceIds.get(f.slug)!,
+      accordId: accordIds.get(name)!,
+      strength,
+    })),
+  );
+  await inChunks(strengths, (chunk) => prisma.fragranceAccord.createMany({ data: chunk, skipDuplicates: true }));
 
-  for (const f of all) {
-    for (const originalSlug of f.dupeOf ?? []) {
-      await prisma.dupe.create({
-        data: {
-          original: { connect: { slug: originalSlug } },
-          dupe: { connect: { slug: f.slug } },
-        },
-      });
-    }
-  }
+  await prisma.dupe.createMany({
+    data: all.flatMap((f) =>
+      (f.dupeOf ?? []).map((original) => ({ originalId: fragranceIds.get(original)!, dupeId: fragranceIds.get(f.slug)! })),
+    ),
+  });
 
   const counts = {
     marques: await prisma.brand.count(),
     parfums: await prisma.fragrance.count(),
+    photos: await prisma.fragrance.count({ where: { imageUrl: { not: null } } }),
+    prix: await prisma.fragrance.count({ where: { priceMin: { not: null } } }),
     notes: await prisma.note.count(),
-    accords: await prisma.accord.count(),
     dupes: await prisma.dupe.count(),
   };
   console.log("Seed terminé :", counts);

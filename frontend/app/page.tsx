@@ -2,22 +2,17 @@ import Link from "next/link";
 import BottleViewer from "@/components/BottleViewer";
 import FragranceCard from "@/components/FragranceCard";
 import Reveal from "@/components/Reveal";
-import { getFragrances, type FragranceSummary } from "@/lib/api";
-
-// Un flacon différent à chaque chargement, choisi parmi ceux qui ont une vraie photo
-function pickHero(list: FragranceSummary[]) {
-  const withPhoto = list.filter((f) => f.imageUrl);
-  const pool = withPhoto.length ? withPhoto : list;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
+import { getFragrances, getRandomFragrance } from "@/lib/api";
 
 export default async function Home({ searchParams }: PageProps<"/">) {
   const { q } = await searchParams;
   const query = typeof q === "string" ? q.trim() : "";
-  const fragrances = await getFragrances(query);
   // Sans recherche, on met en avant les originaux qui ont des dupes
-  const shown = query ? fragrances : fragrances.filter((f) => f._count.dupes > 0);
-  const hero = pickHero(fragrances);
+  const [shown, hero] = await Promise.all([
+    getFragrances(query ? { q: query, limit: 60 } : { hasDupes: true, limit: 60 }),
+    // Un flacon différent à chaque chargement, choisi parmi ceux qui ont une vraie photo
+    getRandomFragrance(),
+  ]);
 
   return (
     <main className="mx-auto max-w-6xl px-4">

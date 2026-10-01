@@ -71,7 +71,7 @@ model Fragrance {
   brandId       String
   brand         Brand          @relation(fields: [brandId], references: [id])
   year          Int?
-  gender        Gender
+  gender        Gender? // inconnu pour une partie du catalogue importé
   concentration Concentration?
   family        String? // ex: "Oriental épicé", "Boisé aromatique"
   description   String?
@@ -83,6 +83,10 @@ model Fragrance {
   timesOfDay TimeOfDay[]
 
   // Note moyenne de la communauté (sur 5)
+  // Fourchette de prix indicative pour 100 ml, en euros
+  priceMin Int?
+  priceMax Int?
+
   rating      Float?
   ratingCount Int?
 

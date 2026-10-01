@@ -26,26 +26,48 @@ app.get("/", (req, res) => {
   res.send("API Fragrance Lab en ligne 🌸");
 });
 
-// Liste des parfums, avec recherche optionnelle par nom ou marque (?q=)
+// Champs affichés sur une carte de parfum
+const card = {
+  brand: true,
+  accords: { include: { accord: true }, orderBy: { strength: "desc" }, take: 3 },
+  _count: { select: { dupes: true } },
+} satisfies Prisma.FragranceInclude;
+
+// Liste des parfums : recherche par nom ou marque (?q=), originaux ayant des dupes (?hasDupes=1),
+// nombre maximal de résultats (?limit=, 60 par défaut, 200 au plus)
 app.get("/api/fragrances", async (req, res) => {
   const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const limit = Math.min(Math.max(Number(req.query.limit) || 60, 1), 200);
+  const where: Prisma.FragranceWhereInput = {
+    ...(q && {
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { brand: { name: { contains: q, mode: "insensitive" } } },
+      ],
+    }),
+    ...(req.query.hasDupes === "1" && { dupes: { some: {} } }),
+  };
   const fragrances = await prisma.fragrance.findMany({
-    where: q
-      ? {
-          OR: [
-            { name: { contains: q, mode: "insensitive" } },
-            { brand: { name: { contains: q, mode: "insensitive" } } },
-          ],
-        }
-      : {},
-    include: {
-      brand: true,
-      accords: { include: { accord: true }, orderBy: { strength: "desc" }, take: 3 },
-      _count: { select: { dupes: true } },
-    },
-    orderBy: { name: "asc" },
+    where,
+    include: card,
+    // Les parfums les plus notés d'abord, puis ceux qui ont une photo
+    orderBy: [{ ratingCount: { sort: "desc", nulls: "last" } }, { name: "asc" }],
+    take: limit,
   });
   res.json(fragrances);
+});
+
+// Un parfum au hasard parmi ceux qui ont une vraie photo (flacon de l'accueil)
+app.get("/api/fragrances/random", async (req, res) => {
+  const where = { imageUrl: { not: null } };
+  const count = await prisma.fragrance.count({ where });
+  const [fragrance] = await prisma.fragrance.findMany({
+    where,
+    include: card,
+    skip: Math.floor(Math.random() * Math.max(count, 1)),
+    take: 1,
+  });
+  res.json(fragrance ?? null);
 });
 
 // Détail d'un parfum avec ses dupes et les originaux dont il s'inspire

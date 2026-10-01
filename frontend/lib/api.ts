@@ -32,7 +32,11 @@ type FragranceBase = {
   slug: string;
   name: string;
   year: number | null;
-  gender: Gender;
+  gender: Gender | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  rating: number | null;
+  ratingCount: number | null;
   family: string | null;
   description: string | null;
   longevity: number | null;
@@ -69,9 +73,34 @@ async function get<T>(path: string): Promise<T | null> {
   return res.json() as Promise<T>;
 }
 
-export async function getFragrances(q?: string) {
-  const query = q ? `?q=${encodeURIComponent(q)}` : "";
+export async function getFragrances(options: { q?: string; hasDupes?: boolean; limit?: number } = {}) {
+  const params = new URLSearchParams();
+  if (options.q) params.set("q", options.q);
+  if (options.hasDupes) params.set("hasDupes", "1");
+  if (options.limit) params.set("limit", String(options.limit));
+  const query = params.size ? `?${params}` : "";
   return (await get<FragranceSummary[]>(`/api/fragrances${query}`)) ?? [];
+}
+
+export function getRandomFragrance() {
+  return get<FragranceSummary>("/api/fragrances/random");
+}
+
+// Fourchette de prix indicative pour 100 ml
+export function priceRange(f: { priceMin: number | null; priceMax: number | null }) {
+  if (f.priceMin == null || f.priceMax == null) return null;
+  return `${f.priceMin} – ${f.priceMax} €`;
+}
+
+// Économie moyenne d'un dupe par rapport à l'original, en pourcentage
+export function savings(
+  original: { priceMin: number | null; priceMax: number | null },
+  dupe: { priceMin: number | null; priceMax: number | null },
+) {
+  if (original.priceMin == null || original.priceMax == null || dupe.priceMin == null || dupe.priceMax == null) return null;
+  const a = (original.priceMin + original.priceMax) / 2;
+  const b = (dupe.priceMin + dupe.priceMax) / 2;
+  return b < a ? Math.round((1 - b / a) * 100) : null;
 }
 
 export type BrandSummary = Brand & { _count: { fragrances: number } };
