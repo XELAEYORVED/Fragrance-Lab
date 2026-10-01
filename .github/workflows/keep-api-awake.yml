@@ -1,0 +1,15 @@
+# Garde l'API Render éveillée : l'offre gratuite la met en veille après 15 minutes sans requête,
+# et le premier visiteur attendrait alors une trentaine de secondes.
+name: Garder l'API éveillée
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # toutes les 10 minutes
+  workflow_dispatch: # lancement manuel possible depuis l'onglet Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Appeler l'API
+        run: curl --silent --show-error --max-time 90 --retry 2 https://fragrance-lab-api.onrender.com/ || true

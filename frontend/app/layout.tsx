@@ -9,6 +9,9 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+// Sur Vercel, laisse jusqu'à 60 s au rendu d'une page si l'API Render se réveille
+export const maxDuration = 60;
+
 export const metadata: Metadata = {
   title: "Fragrance Lab — Les parfums du monde et leurs dupes",
   description:

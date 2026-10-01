@@ -110,18 +110,20 @@ Order {
 - Priorité donnée à un site **fonctionnel de bout en bout** plutôt qu'à une 3D exhaustive sur tout le catalogue : un seul flacon bien modélisé suffit pour la démo.
 - Le chatbot doit s'appuyer sur une vraie fonction de recherche côté backend (pas de réponses inventées par le LLM) pour garantir que les recommandations correspondent à des produits réellement en stock.
 
-## 🚀 Déploiement (Render)
+## 🚀 Déploiement
 
-Les deux services sont décrits dans [`render.yaml`](render.yaml) et déployés depuis la branche `main`.
+| Partie | Hébergeur | Adresse |
+|---|---|---|
+| API (Express + Prisma) | Render, offre gratuite, région Ohio | https://fragrance-lab-api.onrender.com |
+| Site (Next.js) | Vercel, offre gratuite | voir le projet Vercel |
+| Base de données | Neon (PostgreSQL), aws us-east-2 | — |
 
-1. Sur [render.com](https://render.com) : **New → Blueprint**, puis choisir ce dépôt GitHub.
-2. Render lit `render.yaml` et propose deux services : `fragrance-lab-api` (backend) et `fragrance-lab-web` (site).
-3. Saisir la variable secrète **`DATABASE_URL`** (chaîne de connexion Neon) quand Render la demande.
-4. Valider : Render compile, applique les migrations Prisma et met le site en ligne.
-
-L'adresse de l'API (`API_HOST`) et celle du site (`FRONTEND_HOST`) sont reliées automatiquement entre les deux services.
-
-> Offre gratuite : un service inactif depuis 15 minutes se met en veille ; la première visite suivante prend environ une minute.
+- **API** : décrite dans [`render.yaml`](render.yaml) (Blueprint Render, branche `main`). Variable secrète à saisir dans Render : `DATABASE_URL`.
+- **Site** : projet Vercel importé depuis ce dépôt, dossier racine `frontend`, variable `API_URL=https://fragrance-lab-api.onrender.com`.
+  (La compilation de Next.js dépasse les 512 Mo de mémoire de l'offre gratuite de Render.)
+- Chaque push sur `main` redéploie automatiquement l'API (Render) et le site (Vercel).
+- La tâche GitHub [`keep-api-awake`](.github/workflows/keep-api-awake.yml) appelle l'API toutes les 10 minutes pour éviter sa mise en veille.
+- Le site n'est pas référencé par les moteurs de recherche (projet de portfolio).
 
 ### En local
 
