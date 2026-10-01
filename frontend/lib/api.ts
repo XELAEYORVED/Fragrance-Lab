@@ -67,6 +67,17 @@ export async function getFragrances(q?: string) {
   return (await get<FragranceSummary[]>(`/api/fragrances${query}`)) ?? [];
 }
 
+export type BrandSummary = Brand & { _count: { fragrances: number } };
+export type BrandDetail = Brand & { fragrances: FragranceSummary[] };
+
+export async function getBrands() {
+  return (await get<BrandSummary[]>("/api/brands")) ?? [];
+}
+
+export function getBrand(slug: string) {
+  return get<BrandDetail>(`/api/brands/${encodeURIComponent(slug)}`);
+}
+
 export function getFragrance(slug: string) {
   return get<FragranceDetail>(`/api/fragrances/${encodeURIComponent(slug)}`);
 }
