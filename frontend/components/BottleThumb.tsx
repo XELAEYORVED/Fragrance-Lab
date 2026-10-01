@@ -68,7 +68,7 @@ export default function BottleThumb({ fragrance, className }: BottleThumbProps) 
     <div ref={ref} className={`relative aspect-[3/4] ${className ?? ""}`}>
       {/* Même cadrage que la caméra 3D (le flacon occupe environ deux tiers de la hauteur) */}
       <div
-        className={`absolute inset-x-0 inset-y-[16%] transition-opacity duration-500 ${ready ? "opacity-0" : "opacity-100"}`}
+        className={`thumb-static absolute inset-x-0 inset-y-[16%] transition-opacity duration-500 ${ready ? "opacity-0" : "opacity-100"}`}
       >
         <StaticBottle fragrance={fragrance} className="size-full" />
       </div>
