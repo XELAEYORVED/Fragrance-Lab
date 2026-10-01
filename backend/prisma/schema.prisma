@@ -60,6 +60,7 @@ model Brand {
   slug       String      @unique
   country    String?
   website    String?
+  logoUrl    String? // logo officiel (frontend/public/logos)
   fragrances Fragrance[]
 }
 

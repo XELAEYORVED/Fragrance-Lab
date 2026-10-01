@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import BrandLogo from "@/components/BrandLogo";
 import FragranceCard from "@/components/FragranceCard";
 import Reveal from "@/components/Reveal";
 import { getBrand } from "@/lib/api";
@@ -12,9 +13,7 @@ export default async function BrandPage({ params }: PageProps<"/marques/[slug]">
   return (
     <main className="mx-auto max-w-6xl px-4 pt-10 pb-20">
       <section className="glass animate-rise mb-8 flex flex-wrap items-center gap-6 rounded-[2.5rem] p-8 md:p-12">
-        <span className="glass-strong flex size-20 items-center justify-center rounded-3xl text-3xl font-semibold">
-          {brand.name[0]}
-        </span>
+        <BrandLogo brand={brand} size="lg" />
         <div className="flex-1">
           <Link href="/marques" className="text-sm text-muted hover:text-foreground">
             ← Marques

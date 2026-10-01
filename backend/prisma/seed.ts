@@ -28,6 +28,24 @@ const brands: { name: string; country: string; website?: string }[] = [
   { name: "Al Haramain", country: "Émirats arabes unis" },
 ];
 
+// Logos officiels disponibles (sites des marques et Wikimedia Commons)
+const brandLogos: Record<string, string> = {
+  dior: "/logos/dior.svg",
+  creed: "/logos/creed.svg",
+  "tom-ford": "/logos/tom-ford.svg",
+  "carolina-herrera": "/logos/carolina-herrera.svg",
+  "lattafa-perfumes": "/logos/lattafa-perfumes.svg",
+  xerjoff: "/logos/xerjoff.svg",
+  montale: "/logos/montale.svg",
+  "maison-crivelli": "/logos/maison-crivelli.svg",
+  "al-haramain": "/logos/al-haramain.webp",
+  armaf: "/logos/armaf.webp",
+  "initio-parfums-prives": "/logos/initio-parfums-prives.webp",
+  korres: "/logos/korres.webp",
+  "parfums-de-marly": "/logos/parfums-de-marly.webp",
+  "le-labo": "/logos/le-labo.webp",
+};
+
 const fragrances: SeedFragrance[] = [
   // ─── Originaux ───
   {
@@ -291,7 +309,8 @@ async function main() {
   await prisma.brand.deleteMany();
 
   for (const brand of [...brands, ...nicheBrands]) {
-    await prisma.brand.create({ data: { ...brand, slug: slugify(brand.name) } });
+    const slug = slugify(brand.name);
+    await prisma.brand.create({ data: { ...brand, slug, logoUrl: brandLogos[slug] ?? null } });
   }
 
   const all: SeedFragrance[] = [...fragrances, ...nicheFragrances];

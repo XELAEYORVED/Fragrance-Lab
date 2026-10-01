@@ -6,7 +6,13 @@ export type BottleShape = "ROUND" | "SQUARE" | "RECTANGLE" | "CYLINDER" | "PEBBL
 export type NoteLevel = "TOP" | "HEART" | "BASE";
 export type Gender = "MASCULINE" | "FEMININE" | "UNISEX";
 
-export type Brand = { id: string; name: string; slug: string; country: string | null };
+export type Brand = {
+  id: string;
+  name: string;
+  slug: string;
+  country: string | null;
+  logoUrl: string | null;
+};
 
 export type FragranceAccord = { strength: number; accord: { name: string; slug: string } };
 export type FragranceNote = { level: NoteLevel; note: { name: string; slug: string } };

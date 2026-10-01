@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BottleThumb from "@/components/BottleThumb";
+import BrandLogo from "@/components/BrandLogo";
 import BottleViewer from "@/components/BottleViewer";
 import Reveal from "@/components/Reveal";
 import {
@@ -39,7 +40,11 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
           </p>
         </Reveal>
         <Reveal className="glass rounded-[2.5rem] p-8 md:p-12">
-          <Link href={`/marques/${fragrance.brand.slug}`} className="text-sm font-medium text-accent">
+          <Link
+            href={`/marques/${fragrance.brand.slug}`}
+            className="group inline-flex items-center gap-3 text-sm font-medium text-accent"
+          >
+            <BrandLogo brand={fragrance.brand} size="sm" className="transition-transform duration-300 group-hover:scale-105" />
             {fragrance.brand.name}
           </Link>
           <h1 className="mt-2 text-5xl font-semibold tracking-tight md:text-6xl">{fragrance.name}</h1>
