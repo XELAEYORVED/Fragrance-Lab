@@ -15,7 +15,7 @@ export default async function BrandsPage() {
         <p className="text-sm font-medium text-accent">
           {brands.length} maisons
         </p>
-        <h1 className="mt-1 text-5xl font-semibold tracking-tight md:text-6xl">
+        <h1 className="display mt-1 text-5xl md:text-7xl">
           Marques
         </h1>
         <p className="mt-4 max-w-lg text-lg text-muted">

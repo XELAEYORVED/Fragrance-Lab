@@ -34,7 +34,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
     <main className="mx-auto max-w-6xl space-y-4 px-4 pt-10 pb-20">
       {/* En-tête du parfum */}
       <section className="grid gap-4 md:grid-cols-[1fr_1.4fr]">
-        <Reveal className="glass relative overflow-hidden rounded-[2.5rem]">
+        <Reveal className="glass glass-lens relative overflow-hidden rounded-[2.5rem]">
           <BottleViewer
             className="aspect-[4/5] w-full"
             shape={fragrance.bottleShape}
@@ -46,7 +46,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
             Survolez le flacon pour le faire bouger
           </p>
         </Reveal>
-        <Reveal className="glass rounded-[2.5rem] p-8 md:p-12">
+        <Reveal className="glass glass-lens rounded-[2.5rem] p-8 md:p-12">
           <Link
             href={`/marques/${fragrance.brand.slug}`}
             className="group inline-flex items-center gap-3 text-sm font-medium text-accent"
@@ -54,7 +54,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
             <BrandLogo brand={fragrance.brand} size="sm" className="transition-transform duration-300 group-hover:scale-105" />
             {fragrance.brand.name}
           </Link>
-          <h1 className="mt-2 text-5xl font-semibold tracking-tight md:text-6xl">{fragrance.name}</h1>
+          <h1 className="display mt-3 text-5xl md:text-7xl">{fragrance.name}</h1>
           <p className="mt-3 text-sm text-muted">
             {[fragrance.year, fragrance.gender && genderLabel[fragrance.gender], fragrance.family]
               .filter(Boolean)
@@ -126,7 +126,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
         <section className="space-y-4 pt-12">
           <Reveal className="px-2">
             <p className="text-sm font-medium text-accent">Alternatives</p>
-            <h2 className="mt-1 text-4xl font-semibold tracking-tight">
+            <h2 className="display mt-1 text-4xl md:text-5xl">
               {dupes.length} dupe{dupes.length > 1 ? "s" : ""} de {fragrance.name}
             </h2>
           </Reveal>

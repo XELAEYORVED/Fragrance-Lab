@@ -16,63 +16,85 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
   return (
     <main className="mx-auto max-w-6xl px-4">
-      {/* Hero */}
-      <section className="grid items-center gap-10 pt-16 pb-20 md:grid-cols-[1.25fr_1fr]">
+      {/* Hero, façon page produit Apple */}
+      <section className="pt-20 pb-16 text-center md:pt-28">
         <Reveal>
-          <p className="glass-pill reveal-item mb-8 inline-block px-4 py-1.5 text-xs font-medium text-muted" style={{ "--i": 0 } as React.CSSProperties}>
-            Les parfums du monde · et leurs doubles
+          <p className="reveal-item text-lg font-semibold text-accent" style={{ "--i": 0 } as React.CSSProperties}>
+            Fragrance Lab
           </p>
-          <h1 className="reveal-item text-5xl font-semibold tracking-tight md:text-7xl md:leading-[1.02]" style={{ "--i": 1 } as React.CSSProperties}>
+          <h1
+            className="display reveal-item mx-auto mt-3 max-w-4xl text-5xl sm:text-6xl md:text-8xl"
+            style={{ "--i": 1 } as React.CSSProperties}
+          >
             Le parfum que vous aimez.
             <br />
-            <span className="bg-gradient-to-r from-accent to-[var(--blob-2)] bg-clip-text text-transparent">
-              Au prix que vous voulez.
-            </span>
+            <span className="text-muted">Au prix que vous voulez.</span>
           </h1>
-          <p className="reveal-item mt-6 max-w-md text-lg leading-relaxed text-muted" style={{ "--i": 3 } as React.CSSProperties}>
-            Comparez les notes, mesurez la ressemblance et trouvez l&apos;alternative qui vous
-            ressemble.
+          <p
+            className="reveal-item mx-auto mt-6 max-w-2xl text-xl leading-snug text-muted md:text-2xl"
+            style={{ "--i": 3 } as React.CSSProperties}
+          >
+            Près de 2 000 parfums de plus de 100 maisons. Leurs notes, leurs dupes, leur prix.
           </p>
-          <form action="/" className="glass-pill reveal-item mt-10 flex max-w-md items-center py-1.5 pr-1.5 pl-5 focus-within:ring-2 focus-within:ring-accent/40" style={{ "--i": 4 } as React.CSSProperties}>
+          <div className="reveal-item mt-9 flex flex-wrap items-center justify-center gap-x-7 gap-y-4" style={{ "--i": 4 } as React.CSSProperties}>
+            <Link
+              href="#catalogue"
+              className="rounded-full bg-accent px-6 py-3 text-[17px] font-medium text-white transition hover:brightness-110 active:scale-95"
+            >
+              Explorer le catalogue
+            </Link>
+            <Link href="#conseiller" className="text-[17px] text-accent hover:underline">
+              Trouver mon parfum ›
+            </Link>
+          </div>
+          <form
+            action="/"
+            className="glass-pill reveal-item mx-auto mt-10 flex max-w-xl items-center py-1.5 pr-1.5 pl-6 focus-within:ring-2 focus-within:ring-accent/50"
+            style={{ "--i": 5 } as React.CSSProperties}
+          >
             <input
               name="q"
               defaultValue={query}
-              placeholder="Rechercher un parfum ou une marque…"
-              className="flex-1 bg-transparent py-2 outline-none placeholder:text-muted"
+              placeholder="Rechercher un parfum ou une maison"
+              className="flex-1 bg-transparent py-2.5 text-[17px] outline-none placeholder:text-muted"
             />
             <button
               type="submit"
-              className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition duration-200 hover:opacity-85 active:scale-95"
+              className="rounded-full bg-foreground px-5 py-2.5 text-[15px] font-medium text-background transition hover:opacity-85 active:scale-95"
             >
-              Chercher
+              Rechercher
             </button>
           </form>
         </Reveal>
+
+        {/* Flacon vedette, exposé sur un panneau de verre */}
         {hero && (
-          <Reveal className="glass mx-auto w-full max-w-sm overflow-hidden rounded-[2.5rem] pb-8">
-            <Link href={`/parfum/${hero.slug}`} className="block px-16 pt-10 pb-6">
-              <BottleThumb fragrance={hero} className="mx-auto w-full max-w-[220px]" />
-            </Link>
-            <Link href={`/parfum/${hero.slug}`} className="block text-center">
-              <p className="text-xs text-muted">{hero.brand.name}</p>
-              <p className="text-xl font-semibold tracking-tight transition-colors hover:text-accent">{hero.name} →</p>
+          <Reveal className="glass glass-lens mx-auto mt-16 max-w-3xl overflow-hidden rounded-[3rem] px-8 pt-14 pb-10">
+            <Link href={`/parfum/${hero.slug}`} className="group block">
+              <BottleThumb
+                fragrance={hero}
+                className="mx-auto w-full max-w-[260px] transition-transform duration-700 ease-out group-hover:-translate-y-2 group-hover:scale-[1.03]"
+              />
+              <p className="mt-8 text-sm text-muted">{hero.brand.name}</p>
+              <p className="mt-1 text-3xl font-semibold tracking-tight">{hero.name}</p>
+              <p className="mt-3 text-[17px] text-accent group-hover:underline">Découvrir ›</p>
             </Link>
           </Reveal>
         )}
       </section>
 
       {/* Conseiller IA (feature/ai-chatbot) */}
-      <Reveal as="section" id="conseiller" className="glass grid scroll-mt-28 gap-10 rounded-[2.5rem] p-8 md:grid-cols-2 md:p-12">
+      <Reveal as="section" id="conseiller" className="glass glass-lens grid scroll-mt-28 gap-10 rounded-[2.5rem] p-8 md:grid-cols-2 md:p-12">
         <div>
           <p className="text-xs font-medium text-accent">Conseiller · bientôt</p>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight">Décrivez ce que vous aimez.</h2>
+          <h2 className="display mt-3 text-4xl md:text-5xl">Décrivez ce que vous aimez.</h2>
           <p className="mt-4 max-w-sm leading-relaxed text-muted">
             Occasion, notes préférées, budget : notre conseiller trouve votre parfum idéal et ses
             alternatives moins chères.
           </p>
         </div>
         <div className="space-y-3 text-sm">
-          <p className="reveal-item ml-auto w-fit max-w-xs rounded-3xl rounded-br-md bg-accent px-4 py-3 text-white dark:text-background" style={{ "--i": 3 } as React.CSSProperties}>
+          <p className="reveal-item ml-auto w-fit max-w-xs rounded-3xl rounded-br-md bg-accent px-4 py-3 text-white" style={{ "--i": 3 } as React.CSSProperties}>
             Je cherche un parfum sucré et épicé pour l&apos;hiver, moins de 50 €.
           </p>
           <p className="glass-strong reveal-item w-fit max-w-sm rounded-3xl rounded-bl-md px-4 py-3 leading-relaxed" style={{ "--i": 9 } as React.CSSProperties}>
@@ -84,13 +106,19 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
       {/* Catalogue */}
       <section id="catalogue" className="scroll-mt-28 py-20">
-        <div className="mb-8 flex items-end justify-between">
-          <h2 className="text-4xl font-semibold tracking-tight">
-            {query ? <>Résultats pour « {query} »</> : "Les originaux"}
+        <div className="mb-10 text-center">
+          <h2 className="display text-4xl md:text-6xl">
+            {query ? (
+              <>Résultats pour « {query} ».</>
+            ) : (
+              <>
+                Les originaux. <span className="text-muted">Et leurs dupes.</span>
+              </>
+            )}
           </h2>
-          <span className="text-sm text-muted">
+          <p className="mt-3 text-[17px] text-muted">
             {shown.length} parfum{shown.length > 1 ? "s" : ""}
-          </span>
+          </p>
         </div>
 
         {shown.length === 0 ? (

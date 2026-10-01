@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Header from "@/components/Header";
+import LiquidGlassFilter from "@/components/LiquidGlassFilter";
 import "./globals.css";
 
 const inter = Inter({
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <noscript>
           <style>{`.reveal,.reveal-item{opacity:1!important;transform:none!important}.bar-fill{transform:none!important}`}</style>
         </noscript>
+        <LiquidGlassFilter />
         <div className="ambient" aria-hidden>
           <span />
           <span />

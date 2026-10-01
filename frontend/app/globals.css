@@ -1,45 +1,58 @@
 @import "tailwindcss";
 
-/* Identité Fragrance Lab : verre liquide translucide sur fond lumineux en mouvement */
+/* Identité Fragrance Lab : l'esprit des pages produit d'Apple et le Liquid Glass d'iOS 26.
+   Couleurs système Apple, typographie SF Pro, verre épais qui réfracte ce qui passe derrière. */
 :root {
-  --background: #eceef3;
-  --foreground: #0b0b0f;
-  --muted: #6b6f7a;
-  --accent: #b8692a;
-  --accent-soft: #f2a65a40;
-  --line: rgba(15, 15, 30, 0.08);
-  --glass-fill: rgba(255, 255, 255, 0.42);
-  --glass-fill-strong: rgba(255, 255, 255, 0.68);
-  --glass-border: rgba(255, 255, 255, 0.75);
-  --glass-highlight: rgba(255, 255, 255, 0.95);
-  --glass-lowlight: rgba(255, 255, 255, 0.25);
-  --glass-shadow: rgba(40, 40, 80, 0.12);
-  --glass-nav: rgba(246, 246, 250, 0.78);
-  --blob-1: #ffb36b;
-  --blob-2: #ff7eb3;
-  --blob-3: #8b9bff;
-  --blob-4: #5fd6c8;
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  --muted: #6e6e73;
+  --accent: #0071e3;
+  --accent-soft: rgba(0, 113, 227, 0.12);
+  --line: rgba(0, 0, 0, 0.08);
+
+  /* Verre */
+  --glass-clear: rgba(255, 255, 255, 0.16);
+  --glass-panel: rgba(255, 255, 255, 0.5);
+  --glass-strong-fill: rgba(255, 255, 255, 0.72);
+  --glass-edge: rgba(255, 255, 255, 0.6);
+  --glass-rim: rgba(255, 255, 255, 1);
+  --glass-rim-low: rgba(255, 255, 255, 0.55);
+  --glass-depth: rgba(255, 255, 255, 0.35);
+  --glass-shadow: rgba(0, 0, 0, 0.14);
+  --glass-light: rgba(255, 255, 255, 0.55);
+
+  /* Fond d'écran (couleurs système d'iOS) */
+  --blob-1: #ff9f0a;
+  --blob-2: #ff375f;
+  --blob-3: #5e5ce6;
+  --blob-4: #64d2ff;
+  --blob-5: #30d158;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #07070a;
+    --background: #000000;
     --foreground: #f5f5f7;
-    --muted: #9a9aa6;
-    --accent: #f3b46c;
-    --accent-soft: #f3b46c30;
-    --line: rgba(255, 255, 255, 0.08);
-    --glass-fill: rgba(255, 255, 255, 0.06);
-    --glass-fill-strong: rgba(255, 255, 255, 0.11);
-    --glass-border: rgba(255, 255, 255, 0.14);
-    --glass-highlight: rgba(255, 255, 255, 0.28);
-    --glass-lowlight: rgba(255, 255, 255, 0.04);
-    --glass-shadow: rgba(0, 0, 0, 0.55);
-    --glass-nav: rgba(18, 18, 24, 0.78);
-    --blob-1: #b8692a;
-    --blob-2: #9b2f6a;
-    --blob-3: #3a3fb0;
-    --blob-4: #1d7a72;
+    --muted: #86868b;
+    --accent: #2997ff;
+    --accent-soft: rgba(41, 151, 255, 0.16);
+    --line: rgba(255, 255, 255, 0.1);
+
+    --glass-clear: rgba(255, 255, 255, 0.05);
+    --glass-panel: rgba(30, 30, 32, 0.42);
+    --glass-strong-fill: rgba(44, 44, 46, 0.7);
+    --glass-edge: rgba(255, 255, 255, 0.16);
+    --glass-rim: rgba(255, 255, 255, 0.55);
+    --glass-rim-low: rgba(255, 255, 255, 0.18);
+    --glass-depth: rgba(255, 255, 255, 0.08);
+    --glass-shadow: rgba(0, 0, 0, 0.6);
+    --glass-light: rgba(255, 255, 255, 0.22);
+
+    --blob-1: #c76a00;
+    --blob-2: #c4183f;
+    --blob-3: #3f3dbd;
+    --blob-4: #0a84ff;
+    --blob-5: #1f8a3f;
   }
 }
 
@@ -56,62 +69,103 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
 }
 
 ::selection {
   background: var(--accent);
-  color: var(--background);
+  color: #fff;
 }
 
-/* ─── Verre liquide ─────────────────────────────────── */
+/* Titres façon apple.com : très grands, gras et serrés */
+.display {
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+}
 
+/* ─── Liquid Glass ──────────────────────────────────── */
+
+/* Arêtes du verre : bord fin, reflet vif en haut à gauche, contre-reflet en bas à droite,
+   lueur intérieure qui donne l'épaisseur, et ombre portée douce */
 .glass,
 .glass-strong,
-.glass-pill {
+.glass-pill,
+.glass-clear {
   position: relative;
-  background: var(--glass-fill);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(20px) saturate(170%);
+  isolation: isolate;
   box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    inset 0 -1px 0 var(--glass-lowlight),
-    0 10px 40px -10px var(--glass-shadow);
+    inset 0 0 0 1px var(--glass-edge),
+    inset 1.5px 1.5px 0.5px -0.5px var(--glass-rim),
+    inset -1.5px -1.5px 0.5px -0.5px var(--glass-rim-low),
+    inset 0 0 18px var(--glass-depth),
+    0 14px 40px -14px var(--glass-shadow),
+    0 2px 8px -2px var(--glass-shadow);
+}
+
+/* Verre dépoli : panneaux et cartes qui contiennent du texte */
+.glass {
+  background: var(--glass-panel);
+  backdrop-filter: blur(16px) saturate(200%);
 }
 
 .glass-strong {
-  background: var(--glass-fill-strong);
+  background: var(--glass-strong-fill);
+  backdrop-filter: blur(20px) saturate(200%);
+}
+
+/* Verre clair : navigation, boutons, pastilles. On voit nettement ce qui passe derrière */
+.glass-pill,
+.glass-clear {
+  background: var(--glass-clear);
+  backdrop-filter: blur(5px) saturate(220%) brightness(1.04);
 }
 
 .glass-pill {
   border-radius: 9999px;
 }
 
-/* Barre de navigation : plus opaque, le contenu défile dessous sans rester lisible */
-.glass-nav {
-  background: var(--glass-nav);
-  backdrop-filter: blur(24px) saturate(180%);
+/* Réfraction (Chrome, Edge, Arc) : l'arrière-plan est courbé près des bords, comme à travers
+   une lentille épaisse. Activée par LiquidGlassFilter seulement là où elle est prise en charge. */
+/* Les panneaux uniques et bien visibles (.glass-lens) réfractent aussi ; les dizaines de cartes
+   du catalogue gardent le verre dépoli seul, pour rester fluides. */
+html.refraction .glass-lens {
+  backdrop-filter: url(#liquid-glass-soft) blur(12px) saturate(200%);
 }
 
-/* Reflet spéculaire en haut à gauche du verre */
-.glass::before,
-.glass-strong::before {
+html.refraction .glass-pill,
+html.refraction .glass-clear {
+  backdrop-filter: url(#liquid-glass) blur(2px) saturate(220%) brightness(1.04);
+}
+
+/* Reflet de lumière qui suit le pointeur sur toutes les surfaces en verre (--lx, --ly) */
+.glass::after,
+.glass-strong::after,
+.glass-pill::after,
+.glass-clear::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.35) 0%,
-    rgba(255, 255, 255, 0.06) 28%,
-    transparent 55%
+  background: radial-gradient(
+    420px circle at var(--lx, 30vw) var(--ly, -10vh),
+    var(--glass-light),
+    transparent 60%
   );
+  background-attachment: fixed;
   mix-blend-mode: soft-light;
 }
 
-/* ─── Fond lumineux ─────────────────────────────────── */
+/* Barre de navigation : verre clair, un peu plus teinté pour rester lisible */
+.glass-nav {
+  background: color-mix(in srgb, var(--background) 55%, transparent);
+}
+
+/* ─── Fond d'écran ──────────────────────────────────── */
 
 .ambient {
   position: fixed;
@@ -123,20 +177,18 @@ body {
 
 .ambient span {
   position: absolute;
-  width: 46vmax;
-  height: 46vmax;
   border-radius: 9999px;
-  filter: blur(90px);
-  opacity: 0.55;
+  filter: blur(70px);
+  opacity: 0.7;
 }
 
-.ambient span:nth-child(1) { background: var(--blob-1); top: -12vmax; left: -8vmax; }
-.ambient span:nth-child(2) { background: var(--blob-2); top: 20vmax; right: -14vmax; }
-.ambient span:nth-child(3) { background: var(--blob-3); bottom: -18vmax; left: 18vmax; }
-.ambient span:nth-child(4) { background: var(--blob-4); top: 35vmax; left: -16vmax; width: 30vmax; height: 30vmax; }
+.ambient span:nth-child(1) { background: var(--blob-1); width: 52vmax; height: 52vmax; top: -18vmax; left: -12vmax; }
+.ambient span:nth-child(2) { background: var(--blob-2); width: 44vmax; height: 44vmax; top: 12vmax; right: -16vmax; }
+.ambient span:nth-child(3) { background: var(--blob-3); width: 56vmax; height: 56vmax; bottom: -26vmax; left: 10vmax; }
+.ambient span:nth-child(4) { background: var(--blob-4); width: 30vmax; height: 30vmax; top: 30vmax; left: -10vmax; }
 
-/* Le fond reste immobile : s'il bougeait, le navigateur devrait recalculer le flou
-   de chaque panneau en verre à chaque image, ce qui saccade la page. */
+/* Le fond reste immobile : s'il bougeait, le navigateur devrait recalculer le verre
+   de chaque panneau à chaque image, ce qui saccaderait la page. */
 
 /* ─── Mouvements ────────────────────────────────────── */
 

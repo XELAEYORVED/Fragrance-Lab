@@ -18,7 +18,7 @@ export default async function BrandPage({ params }: PageProps<"/marques/[slug]">
           <Link href="/marques" className="text-sm text-muted hover:text-foreground">
             ← Marques
           </Link>
-          <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{brand.name}</h1>
+          <h1 className="display text-4xl md:text-6xl">{brand.name}</h1>
           <p className="mt-1 text-muted">
             {[brand.country, `${brand.fragrances.length} parfum${brand.fragrances.length > 1 ? "s" : ""}`]
               .filter(Boolean)
