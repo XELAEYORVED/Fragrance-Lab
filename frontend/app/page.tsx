@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Bottle from "@/components/Bottle";
+import BottleViewer from "@/components/BottleViewer";
 import FragranceCard from "@/components/FragranceCard";
 import { getFragrances } from "@/lib/api";
 
@@ -46,13 +46,18 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </form>
         </div>
         {hero && (
-          <Link href={`/parfum/${hero.slug}`} className="glass mx-auto block w-full max-w-sm rounded-[2.5rem] p-12">
-            <div className="mx-auto w-40 md:w-48">
-              <Bottle shape={hero.bottleShape} liquidColor={hero.liquidColor} capColor={hero.capColor} animated />
-            </div>
-            <p className="mt-6 text-center text-xs text-muted">{hero.brand.name}</p>
-            <p className="text-center text-xl font-semibold tracking-tight">{hero.name}</p>
-          </Link>
+          <div className="glass mx-auto w-full max-w-sm overflow-hidden rounded-[2.5rem] pb-8">
+            <BottleViewer
+              className="aspect-square w-full"
+              shape={hero.bottleShape}
+              liquidColor={hero.liquidColor}
+              capColor={hero.capColor}
+            />
+            <Link href={`/parfum/${hero.slug}`} className="block text-center">
+              <p className="text-xs text-muted">{hero.brand.name}</p>
+              <p className="text-xl font-semibold tracking-tight hover:text-accent">{hero.name} →</p>
+            </Link>
+          </div>
         )}
       </section>
 

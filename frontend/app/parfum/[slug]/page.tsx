@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Bottle from "@/components/Bottle";
+import BottleViewer from "@/components/BottleViewer";
 import {
   genderLabel,
   getFragrance,
@@ -24,15 +25,16 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
     <main className="mx-auto max-w-6xl space-y-4 px-4 pt-10 pb-20">
       {/* En-tête du parfum */}
       <section className="grid gap-4 md:grid-cols-[1fr_1.4fr]">
-        <div className="glass flex items-center justify-center rounded-[2.5rem] p-12">
-          <div className="w-44 md:w-56">
-            <Bottle
-              shape={fragrance.bottleShape}
-              liquidColor={fragrance.liquidColor}
-              capColor={fragrance.capColor}
-              animated
-            />
-          </div>
+        <div className="glass relative overflow-hidden rounded-[2.5rem]">
+          <BottleViewer
+            className="aspect-[4/5] w-full"
+            shape={fragrance.bottleShape}
+            liquidColor={fragrance.liquidColor}
+            capColor={fragrance.capColor}
+          />
+          <p className="pointer-events-none absolute inset-x-0 bottom-5 text-center text-xs text-muted">
+            Faites pivoter · molette pour zoomer
+          </p>
         </div>
         <div className="glass animate-rise rounded-[2.5rem] p-8 md:p-12">
           <Link href={`/marques/${fragrance.brand.slug}`} className="text-sm font-medium text-accent">
