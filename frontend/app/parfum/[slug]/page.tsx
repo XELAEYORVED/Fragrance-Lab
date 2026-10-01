@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import BottleThumb from "@/components/BottleThumb";
 import BrandLogo from "@/components/BrandLogo";
+import { NoteChip, NoteTile } from "@/components/NoteBadge";
 import BottleViewer from "@/components/BottleViewer";
 import Reveal from "@/components/Reveal";
 import {
@@ -19,6 +20,11 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
   const { slug } = await params;
   const fragrance = await getFragrance(slug);
   if (!fragrance) notFound();
+
+  // Photo de chaque note, retrouvée par son nom dans les comparaisons
+  const noteImages = new Map(
+    [fragrance, ...fragrance.dupes.map((d) => d.dupe)].flatMap((f) => f.notes.map((n) => [n.note.name, n.note.imageUrl] as const)),
+  );
 
   const dupes = fragrance.dupes
     .map(({ id, dupe }) => ({ id, dupe, notes: compareNotes(fragrance, dupe) }))
@@ -87,15 +93,19 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
           <SectionTitle>Pyramide olfactive</SectionTitle>
           <div className="space-y-5">
             {levels.map((level, li) => (
-              <div key={level} className="grid grid-cols-[3.5rem_1fr] gap-3">
-                <span className="pt-1.5 text-xs font-medium text-muted">{levelLabel[level]}</span>
-                <div className="flex flex-wrap gap-2">
+              <div key={level}>
+                <p className="mb-3 text-xs font-medium text-muted">Notes de {levelLabel[level].toLowerCase()}</p>
+                <div className="flex flex-wrap gap-x-2 gap-y-4">
                   {fragrance.notes
                     .filter((n) => n.level === level)
                     .map((n, j) => (
-                      <span key={n.note.slug} className="glass-pill reveal-item px-3 py-1 text-sm" style={{ "--i": li * 3 + j } as React.CSSProperties}>
-                        {n.note.name}
-                      </span>
+                      <NoteTile
+                        key={n.note.slug}
+                        name={n.note.name}
+                        imageUrl={n.note.imageUrl}
+                        className="reveal-item"
+                        style={{ "--i": li * 3 + j } as React.CSSProperties}
+                      />
                     ))}
                 </div>
               </div>
@@ -176,13 +186,17 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
                       <span className="pt-1.5 text-xs font-medium text-muted">{levelLabel[level]}</span>
                       <div className="flex flex-wrap gap-2 text-sm">
                         {shared.map((n) => (
-                          <span key={n} className="reveal-item rounded-full bg-accent px-3 py-1 text-white dark:text-background" style={{ "--i": li * 4 } as React.CSSProperties}>{n}</span>
+                          <NoteChip key={n} name={n} imageUrl={noteImages.get(n)} className="reveal-item bg-accent text-white dark:text-background" style={{ "--i": li * 4 } as React.CSSProperties} />
                         ))}
                         {onlyOriginal.map((n) => (
-                          <span key={n} className="glass-pill reveal-item px-3 py-1 text-muted line-through" style={{ "--i": li * 4 + 1 } as React.CSSProperties}>{n}</span>
+                          <NoteChip key={n} name={n} imageUrl={noteImages.get(n)} className="glass-pill reveal-item text-muted opacity-70" style={{ "--i": li * 4 + 1 } as React.CSSProperties}>
+                            <span className="line-through">{n}</span>
+                          </NoteChip>
                         ))}
                         {onlyDupe.map((n) => (
-                          <span key={n} className="reveal-item rounded-full border border-dashed border-accent px-3 py-1 text-accent" style={{ "--i": li * 4 + 2 } as React.CSSProperties}>+ {n}</span>
+                          <NoteChip key={n} name={n} imageUrl={noteImages.get(n)} className="reveal-item border border-dashed border-accent text-accent" style={{ "--i": li * 4 + 2 } as React.CSSProperties}>
+                            + {n}
+                          </NoteChip>
                         ))}
                       </div>
                     </div>

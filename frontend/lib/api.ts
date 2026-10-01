@@ -18,7 +18,10 @@ export type Brand = {
 };
 
 export type FragranceAccord = { strength: number; accord: { name: string; slug: string } };
-export type FragranceNote = { level: NoteLevel; note: { name: string; slug: string } };
+export type FragranceNote = {
+  level: NoteLevel;
+  note: { name: string; slug: string; imageUrl: string | null; imageSource: string | null };
+};
 
 export type PurchaseLink = {
   id: string;
