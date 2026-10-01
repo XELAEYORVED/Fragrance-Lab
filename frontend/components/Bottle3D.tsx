@@ -96,7 +96,8 @@ function Cap({ shape, color, y }: { shape: BottleShape; color: string; y: number
   );
 }
 
-function Flacon({ shape, liquidColor, capColor }: Bottle3DProps) {
+// Flacon générique (forme et couleurs), utilisé quand le parfum n'a pas de photo
+export function Flacon({ shape, liquidColor, capColor }: Bottle3DProps) {
   const { height } = dims[shape];
   const top = height / 2;
 

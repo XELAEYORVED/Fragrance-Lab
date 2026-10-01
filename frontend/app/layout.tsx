@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Header from "@/components/Header";
+import SharedSceneLoader from "@/components/SharedSceneLoader";
 import "./globals.css";
 
 const inter = Inter({
@@ -36,6 +37,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             noms de marques et de parfums servent uniquement à identifier les produits comparés.
           </p>
         </footer>
+        {/* Scène 3D commune à toutes les vignettes de flacons */}
+        <SharedSceneLoader />
       </body>
     </html>
   );

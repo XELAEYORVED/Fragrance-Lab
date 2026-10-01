@@ -276,17 +276,31 @@ function createMaterial(texture: THREE.Texture) {
   return material;
 }
 
-export default function PhotoFlacon({ src, shape }: { src: string; shape: BottleShape }) {
+type PhotoFlaconProps = {
+  src: string;
+  shape: BottleShape;
+  /** Largeur maximale dans la scène : les flacons plus larges sont réduits pour tenir dans le cadre */
+  maxWidth?: number;
+  /** Appelé quand le volume est prêt à l'écran */
+  onReady?: () => void;
+};
+
+export default function PhotoFlacon({ src, shape, maxWidth, onReady }: PhotoFlaconProps) {
   const loaded = useTexture(src);
 
-  const { geometry, material } = useMemo(() => {
+  const { geometry, material, scale } = useMemo(() => {
     const image = loaded.image as HTMLImageElement;
     const { rows, width } = measureSilhouette(image);
     return {
       geometry: buildGeometry(rows, width, shape),
       material: createMaterial(opaqueTexture(image)),
+      scale: maxWidth && width > maxWidth ? maxWidth / width : 1,
     };
-  }, [loaded, shape]);
+  }, [loaded, shape, maxWidth]);
+
+  useEffect(() => {
+    onReady?.();
+  }, [geometry, onReady]);
 
   // Libère la mémoire GPU quand le flacon change ou disparaît
   useEffect(
@@ -298,5 +312,5 @@ export default function PhotoFlacon({ src, shape }: { src: string; shape: Bottle
     [geometry, material],
   );
 
-  return <mesh geometry={geometry} material={material} position={[0, -0.2, 0]} />;
+  return <mesh geometry={geometry} material={material} position={[0, -0.2 * scale, 0]} scale={scale} />;
 }

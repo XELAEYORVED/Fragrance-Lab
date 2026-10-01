@@ -8,7 +8,7 @@ export default function FragranceCard({ fragrance: f }: { fragrance: FragranceSu
       href={`/parfum/${f.slug}`}
       className="glass group flex h-full flex-col rounded-[2rem] p-7 transition duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[0_24px_60px_-20px_var(--glass-shadow)] active:scale-[0.99]"
     >
-      <div className="mx-auto mb-6 w-32 transition-transform duration-700 ease-out group-hover:-translate-y-2 group-hover:scale-105 group-hover:-rotate-2">
+      <div className="mx-auto -mt-2 mb-1 w-40 transition-transform duration-700 ease-out group-hover:-translate-y-1">
         <BottleThumb fragrance={f} />
       </div>
       <p className="text-xs text-muted">{f.brand.name}</p>
