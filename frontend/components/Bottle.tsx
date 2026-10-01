@@ -48,7 +48,7 @@ export default function Bottle({ shape, liquidColor, capColor, className, animat
       </defs>
 
       {/* Ombre portée */}
-      <ellipse cx="50" cy="160" rx="34" ry="4" fill="#000" opacity="0.45" />
+      <ellipse cx="50" cy="160" rx="34" ry="4" fill="#000" opacity="0.18" />
 
       {/* Bouchon et col */}
       <rect x="40" y={neckY - 10} width="20" height="10" fill="#d9d2c5" opacity="0.5" />
@@ -56,7 +56,7 @@ export default function Bottle({ shape, liquidColor, capColor, className, animat
       <rect x="35" y={neckY - 38} width="4" height="26" rx="2" fill="#fff" opacity="0.18" />
 
       {/* Verre et jus */}
-      <path d={path} fill="#ffffff" opacity="0.06" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="1.2" />
+      <path d={path} fill="#ffffff" fillOpacity="0.18" stroke="currentColor" strokeOpacity="0.22" strokeWidth="1.2" />
       <g clipPath={`url(#${id}-clip)`}>
         <rect x="0" y={neckY + 14} width="100" height="160" fill={`url(#${id}-liquid)`} />
         <rect x="0" y="0" width="100" height="168" fill={`url(#${id}-shine)`} />

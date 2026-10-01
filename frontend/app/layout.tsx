@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 import Header from "@/components/Header";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  style: ["normal", "italic"],
-});
-
-const manrope = Manrope({
-  variable: "--font-manrope",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -23,12 +16,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${cormorant.variable} ${manrope.variable} h-full antialiased`}>
+    <html lang="fr" className={`${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col">
+        <div className="ambient" aria-hidden>
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
         <Header />
         <div className="flex-1">{children}</div>
-        <footer className="border-t border-line px-6 py-10 text-xs text-muted">
-          <p className="mx-auto max-w-6xl leading-relaxed">
+        <footer className="px-4 pb-6">
+          <p className="glass mx-auto max-w-6xl rounded-3xl px-6 py-5 text-xs leading-relaxed text-muted">
             Fragrance Lab est un comparateur indépendant, sans lien avec les marques citées. Les
             noms de marques et de parfums servent uniquement à identifier les produits comparés.
           </p>

@@ -1,34 +1,61 @@
 @import "tailwindcss";
 
-/* Identité Fragrance Lab : noir chaud, ivoire, accent or ambré */
+/* Identité Fragrance Lab : verre liquide translucide sur fond lumineux en mouvement */
 :root {
-  --background: #0d0c0b;
-  --surface: #161412;
-  --surface-raised: #1e1b18;
-  --line: #2c2824;
-  --foreground: #ede6da;
-  --muted: #8f877b;
-  --accent: #c8a46a;
-  --accent-soft: #c8a46a26;
+  --background: #eceef3;
+  --foreground: #0b0b0f;
+  --muted: #6b6f7a;
+  --accent: #b8692a;
+  --accent-soft: #f2a65a40;
+  --line: rgba(15, 15, 30, 0.08);
+  --glass-fill: rgba(255, 255, 255, 0.42);
+  --glass-fill-strong: rgba(255, 255, 255, 0.68);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-highlight: rgba(255, 255, 255, 0.95);
+  --glass-lowlight: rgba(255, 255, 255, 0.25);
+  --glass-shadow: rgba(40, 40, 80, 0.12);
+  --blob-1: #ffb36b;
+  --blob-2: #ff7eb3;
+  --blob-3: #8b9bff;
+  --blob-4: #5fd6c8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #07070a;
+    --foreground: #f5f5f7;
+    --muted: #9a9aa6;
+    --accent: #f3b46c;
+    --accent-soft: #f3b46c30;
+    --line: rgba(255, 255, 255, 0.08);
+    --glass-fill: rgba(255, 255, 255, 0.06);
+    --glass-fill-strong: rgba(255, 255, 255, 0.11);
+    --glass-border: rgba(255, 255, 255, 0.14);
+    --glass-highlight: rgba(255, 255, 255, 0.28);
+    --glass-lowlight: rgba(255, 255, 255, 0.04);
+    --glass-shadow: rgba(0, 0, 0, 0.55);
+    --blob-1: #b8692a;
+    --blob-2: #9b2f6a;
+    --blob-3: #3a3fb0;
+    --blob-4: #1d7a72;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-line: var(--line);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
-  --font-sans: var(--font-manrope);
-  --font-display: var(--font-cormorant);
+  --color-line: var(--line);
+  --font-sans: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
@@ -36,40 +63,102 @@ body {
   color: var(--background);
 }
 
-/* Flottement lent du flacon */
+/* ─── Verre liquide ─────────────────────────────────── */
+
+.glass,
+.glass-strong,
+.glass-pill {
+  position: relative;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 -1px 0 var(--glass-lowlight),
+    0 10px 40px -10px var(--glass-shadow);
+}
+
+.glass-strong {
+  background: var(--glass-fill-strong);
+}
+
+.glass-pill {
+  border-radius: 9999px;
+}
+
+/* Reflet spéculaire en haut à gauche du verre */
+.glass::before,
+.glass-strong::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.06) 28%,
+    transparent 55%
+  );
+  mix-blend-mode: soft-light;
+}
+
+/* ─── Fond lumineux ─────────────────────────────────── */
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient span {
+  position: absolute;
+  width: 46vmax;
+  height: 46vmax;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.55;
+  animation: drift 28s ease-in-out infinite alternate;
+}
+
+.ambient span:nth-child(1) { background: var(--blob-1); top: -12vmax; left: -8vmax; }
+.ambient span:nth-child(2) { background: var(--blob-2); top: 20vmax; right: -14vmax; animation-delay: -7s; }
+.ambient span:nth-child(3) { background: var(--blob-3); bottom: -18vmax; left: 18vmax; animation-delay: -14s; }
+.ambient span:nth-child(4) { background: var(--blob-4); top: 35vmax; left: -16vmax; width: 30vmax; height: 30vmax; animation-delay: -21s; }
+
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6vmax, -4vmax) scale(1.12); }
+  100% { transform: translate(-4vmax, 5vmax) scale(0.94); }
+}
+
+/* ─── Mouvements ────────────────────────────────────── */
+
 @keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-1deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(1deg);
-  }
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
 }
 
 .animate-float {
   animation: float 7s ease-in-out infinite;
 }
 
-/* Apparition douce au chargement */
 @keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(18px) scale(0.98); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
 }
 
 .animate-rise {
-  animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise 1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-float,
-  .animate-rise {
+  .animate-rise,
+  .ambient span {
     animation: none;
   }
 }
