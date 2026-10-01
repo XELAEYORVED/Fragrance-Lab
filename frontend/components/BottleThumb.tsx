@@ -4,9 +4,10 @@ import { View } from "@react-three/drei";
 import { useCallback, useEffect, useRef, useState } from "react";
 import StaticBottle from "./StaticBottle";
 import ThumbScene from "./ThumbScene";
+import { createPointer, trackPointer } from "./Tilt3D";
 import type { BottleShape } from "@/lib/api";
 
-// Vignette de flacon en 3D, dessinée dans la scène partagée (SharedScene).
+// Vignette de flacon en 3D, dessinée dans la scène partagée (SharedScene) : elle s'incline vers la souris.
 // L'image fixe reste affichée jusqu'à ce que le modèle 3D soit prêt, puis s'efface.
 
 type BottleThumbProps = {
@@ -33,20 +34,23 @@ export default function BottleThumb({ fragrance, className }: BottleThumbProps) 
   const [enabled, setEnabled] = useState(false);
   const [motion, setMotion] = useState(true);
   const [ready, setReady] = useState(false);
-  const [hover, setHover] = useState(false);
   const onReady = useCallback(() => setReady(true), []);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Le flacon réagit au survol de toute sa carte (élément .group le plus proche), pas seulement de l'image
+  const pointer = useRef(createPointer());
+
+  // Le flacon suit la souris sur toute sa carte (élément .group le plus proche), pas seulement sur l'image
   useEffect(() => {
     const target = ref.current?.closest<HTMLElement>(".group") ?? ref.current;
     if (!target) return;
-    const enter = () => setHover(true);
-    const leave = () => setHover(false);
-    target.addEventListener("pointerenter", enter);
+    const move = (event: PointerEvent) => trackPointer(pointer.current, event, target);
+    const leave = () => {
+      pointer.current.active = false;
+    };
+    target.addEventListener("pointermove", move);
     target.addEventListener("pointerleave", leave);
     return () => {
-      target.removeEventListener("pointerenter", enter);
+      target.removeEventListener("pointermove", move);
       target.removeEventListener("pointerleave", leave);
     };
   }, []);
@@ -75,7 +79,7 @@ export default function BottleThumb({ fragrance, className }: BottleThumbProps) 
             shape={fragrance.bottleShape}
             liquidColor={fragrance.liquidColor}
             capColor={fragrance.capColor}
-            hover={hover}
+            pointer={pointer}
             motion={motion}
             onReady={onReady}
           />

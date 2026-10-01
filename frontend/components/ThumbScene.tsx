@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { Flacon } from "./Bottle3D";
 import PhotoFlacon from "./PhotoFlacon";
+import Tilt3D, { type PointerState } from "./Tilt3D";
 import type { BottleShape } from "@/lib/api";
 
 export type ThumbSceneProps = {
@@ -14,28 +15,10 @@ export type ThumbSceneProps = {
   shape: BottleShape;
   liquidColor: string;
   capColor: string;
-  hover: boolean;
+  pointer: React.RefObject<PointerState>;
   motion: boolean;
   onReady: () => void;
 };
-
-// Rotation lente en continu, plus rapide et légèrement agrandie au survol
-function Spin({ hover, motion, children }: { hover: boolean; motion: boolean; children: React.ReactNode }) {
-  const ref = useRef<THREE.Group>(null);
-  const speed = useRef(0);
-
-  useFrame((_, delta) => {
-    const group = ref.current;
-    if (!group || !motion) return;
-    const step = Math.min(delta, 1 / 30);
-    speed.current = THREE.MathUtils.damp(speed.current, hover ? 2.4 : 0.45, 4, step);
-    group.rotation.y += speed.current * step;
-    const scale = THREE.MathUtils.damp(group.scale.x, hover ? 1.06 : 1, 6, step);
-    group.scale.setScalar(scale);
-  });
-
-  return <group ref={ref}>{children}</group>;
-}
 
 // Éclairage studio commun à toutes les vignettes : calculé une seule fois, puis partagé.
 // (Un éclairage par vignette saturait les unités de texture de la carte graphique.)
@@ -58,14 +41,14 @@ function SharedEnvironment() {
 }
 
 // Contenu 3D d'une vignette : caméra, lumière studio et flacon
-export default function ThumbScene({ imageUrl, shape, liquidColor, capColor, hover, motion, onReady }: ThumbSceneProps) {
+export default function ThumbScene({ imageUrl, shape, liquidColor, capColor, pointer, motion, onReady }: ThumbSceneProps) {
   return (
     <>
       <PerspectiveCamera makeDefault position={[0, 0.15, 7.2]} fov={30} />
       <SharedEnvironment />
       <ambientLight intensity={0.5} />
       <directionalLight position={[3, 5, 4]} intensity={1.1} />
-      <Spin hover={hover} motion={motion}>
+      <Tilt3D pointer={pointer} motion={motion} maxYaw={0.55} maxPitch={0.28} hoverScale={1.08}>
         {imageUrl ? (
           <Suspense fallback={null}>
             <PhotoFlacon src={imageUrl} shape={shape} maxWidth={2.5} onReady={onReady} textureSize={384} />
@@ -75,7 +58,7 @@ export default function ThumbScene({ imageUrl, shape, liquidColor, capColor, hov
             <Flacon shape={shape} liquidColor={liquidColor} capColor={capColor} />
           </FlaconReady>
         )}
-      </Spin>
+      </Tilt3D>
     </>
   );
 }

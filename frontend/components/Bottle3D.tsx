@@ -1,12 +1,12 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Environment, Float, Lightformer, OrbitControls, RoundedBox } from "@react-three/drei";
+import { ContactShadows, Environment, Float, Lightformer, RoundedBox } from "@react-three/drei";
 import { Suspense, useMemo, useRef, useState } from "react";
-import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import type { BottleShape } from "@/lib/api";
 import PhotoFlacon from "./PhotoFlacon";
+import Tilt3D, { type PointerState } from "./Tilt3D";
 
 // Scène 3D du flacon : reconstruit depuis sa photo si elle existe, sinon généré
 // à partir de la forme et des couleurs du parfum
@@ -16,6 +16,8 @@ export type Bottle3DProps = {
   liquidColor: string;
   capColor: string;
   imageUrl?: string | null;
+  /** Position du pointeur sur la scène, suivie par le flacon */
+  pointer?: React.RefObject<PointerState>;
 };
 
 type Dims = { width: number; height: number; depth: number };
@@ -148,7 +150,7 @@ export function Flacon({ shape, liquidColor, capColor }: Bottle3DProps) {
   );
 }
 
-// Entrée en scène : le flacon monte, grandit et pivote jusqu'à faire face
+// Entrée en scène : le flacon monte, grandit et pivote légèrement jusqu'à faire face
 function Intro({ enabled, children }: { enabled: boolean; children: React.ReactNode }) {
   const ref = useRef<THREE.Group>(null);
 
@@ -166,7 +168,7 @@ function Intro({ enabled, children }: { enabled: boolean; children: React.ReactN
     <group
       ref={ref}
       position={[0, enabled ? -0.7 : 0, 0]}
-      rotation={[0, enabled ? -Math.PI * 0.85 : 0, 0]}
+      rotation={[0, enabled ? -0.35 : 0, 0]}
       scale={enabled ? 0.82 : 1}
     >
       {children}
@@ -192,44 +194,7 @@ function Glint({ enabled }: { enabled: boolean }) {
   return <Lightformer ref={ref} intensity={9} position={[-9, 0.5, 3.5]} rotation-z={0.35} scale={[0.6, 9, 1]} />;
 }
 
-// Rotation automatique qui s'arrête dès qu'on attrape le flacon et reprend en douceur ensuite
-function Controls({ enabled }: { enabled: boolean }) {
-  const ref = useRef<OrbitControlsImpl>(null);
-  const resumeAt = useRef(0); // horodatage (ms) à partir duquel la rotation reprend
-  const SPEED = 1.1;
-  const RESUME_DELAY = 2500;
-
-  useFrame((_, delta) => {
-    const controls = ref.current;
-    if (!controls) return;
-    const target = enabled && performance.now() >= resumeAt.current ? SPEED : 0;
-    controls.autoRotateSpeed = THREE.MathUtils.damp(controls.autoRotateSpeed, target, 2.2, Math.min(delta, 1 / 30));
-  });
-
-  return (
-    <OrbitControls
-      ref={ref}
-      makeDefault
-      enablePan={false}
-      enableDamping
-      dampingFactor={0.07}
-      rotateSpeed={0.8}
-      zoomSpeed={0.6}
-      minDistance={4}
-      maxDistance={9}
-      minPolarAngle={Math.PI / 4}
-      maxPolarAngle={Math.PI / 1.7}
-      autoRotate
-      autoRotateSpeed={0}
-      onStart={() => {
-        resumeAt.current = Infinity;
-      }}
-      onEnd={() => {
-        resumeAt.current = performance.now() + RESUME_DELAY;
-      }}
-    />
-  );
-}
+const restingPointer = { current: { x: 0, y: 0, active: false } };
 
 export default function Bottle3D(props: Bottle3DProps) {
   const [motion] = useState(
@@ -260,7 +225,8 @@ export default function Bottle3D(props: Bottle3DProps) {
       <directionalLight position={[3, 5, 4]} intensity={1.2} />
 
       <Intro enabled={motion}>
-        <Float speed={motion ? 1.4 : 0} rotationIntensity={0.18} floatIntensity={0.5} floatingRange={[-0.06, 0.06]}>
+        <Tilt3D pointer={props.pointer ?? restingPointer} motion={motion} maxYaw={0.5} maxPitch={0.25} hoverScale={1.04}>
+        <Float speed={motion ? 1.4 : 0} rotationIntensity={0.08} floatIntensity={0.5} floatingRange={[-0.06, 0.06]}>
           {props.imageUrl ? (
             <Suspense fallback={null}>
               <PhotoFlacon src={props.imageUrl} shape={props.shape} />
@@ -269,10 +235,10 @@ export default function Bottle3D(props: Bottle3DProps) {
             <Flacon {...props} />
           )}
         </Float>
+        </Tilt3D>
       </Intro>
 
       <ContactShadows position={[0, -1.55, 0]} opacity={0.35} scale={6} blur={2.6} far={3} />
-      <Controls enabled={motion} />
     </Canvas>
   );
 }

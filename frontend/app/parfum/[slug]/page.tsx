@@ -37,7 +37,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
             imageUrl={fragrance.imageUrl}
           />
           <p className="pointer-events-none absolute inset-x-0 bottom-5 text-center text-xs text-muted">
-            Faites tourner le flacon · molette pour zoomer
+            Survolez le flacon pour le faire bouger
           </p>
         </Reveal>
         <Reveal className="glass rounded-[2.5rem] p-8 md:p-12">
