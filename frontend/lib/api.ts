@@ -36,6 +36,7 @@ type FragranceBase = {
   bottleShape: BottleShape;
   liquidColor: string;
   capColor: string;
+  imageUrl: string | null;
   brand: Brand;
 };
 

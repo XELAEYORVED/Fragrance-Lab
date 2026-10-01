@@ -14,6 +14,7 @@
   --glass-highlight: rgba(255, 255, 255, 0.95);
   --glass-lowlight: rgba(255, 255, 255, 0.25);
   --glass-shadow: rgba(40, 40, 80, 0.12);
+  --glass-nav: rgba(246, 246, 250, 0.78);
   --blob-1: #ffb36b;
   --blob-2: #ff7eb3;
   --blob-3: #8b9bff;
@@ -34,6 +35,7 @@
     --glass-highlight: rgba(255, 255, 255, 0.28);
     --glass-lowlight: rgba(255, 255, 255, 0.04);
     --glass-shadow: rgba(0, 0, 0, 0.55);
+    --glass-nav: rgba(18, 18, 24, 0.78);
     --blob-1: #b8692a;
     --blob-2: #9b2f6a;
     --blob-3: #3a3fb0;
@@ -72,7 +74,6 @@ body {
   background: var(--glass-fill);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     inset 0 -1px 0 var(--glass-lowlight),
@@ -85,6 +86,12 @@ body {
 
 .glass-pill {
   border-radius: 9999px;
+}
+
+/* Barre de navigation : plus opaque, le contenu défile dessous sans rester lisible */
+.glass-nav {
+  background: var(--glass-nav);
+  backdrop-filter: blur(40px) saturate(200%);
 }
 
 /* Reflet spéculaire en haut à gauche du verre */

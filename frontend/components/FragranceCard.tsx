@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Bottle from "@/components/Bottle";
+import BottleThumb from "@/components/BottleThumb";
 import type { FragranceSummary } from "@/lib/api";
 
 export default function FragranceCard({ fragrance: f }: { fragrance: FragranceSummary }) {
@@ -8,8 +8,8 @@ export default function FragranceCard({ fragrance: f }: { fragrance: FragranceSu
       href={`/parfum/${f.slug}`}
       className="glass group flex flex-col rounded-[2rem] p-7 transition duration-500 hover:-translate-y-1"
     >
-      <div className="mx-auto mb-6 w-24 transition-transform duration-700 group-hover:-translate-y-2 group-hover:scale-105">
-        <Bottle shape={f.bottleShape} liquidColor={f.liquidColor} capColor={f.capColor} />
+      <div className="mx-auto mb-6 w-32 transition-transform duration-700 group-hover:-translate-y-2 group-hover:scale-105">
+        <BottleThumb fragrance={f} />
       </div>
       <p className="text-xs text-muted">{f.brand.name}</p>
       <h3 className="text-xl font-semibold tracking-tight">{f.name}</h3>

@@ -9,7 +9,7 @@ const links = [
 export default function Header() {
   return (
     <header className="sticky top-0 z-20 px-4 pt-4">
-      <nav className="glass-pill mx-auto flex max-w-6xl items-center justify-between py-2 pr-2 pl-6">
+      <nav className="glass-pill glass-nav mx-auto flex max-w-6xl items-center justify-between py-2 pr-2 pl-6">
         <Link href="/" className="text-lg font-semibold tracking-tight">
           Fragrance <span className="text-accent">Lab</span>
         </Link>

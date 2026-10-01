@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BottlePhoto from "@/components/BottlePhoto";
 import BottleViewer from "@/components/BottleViewer";
 import FragranceCard from "@/components/FragranceCard";
 import { getFragrances } from "@/lib/api";
@@ -47,12 +48,16 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         </div>
         {hero && (
           <div className="glass mx-auto w-full max-w-sm overflow-hidden rounded-[2.5rem] pb-8">
-            <BottleViewer
-              className="aspect-square w-full"
-              shape={hero.bottleShape}
-              liquidColor={hero.liquidColor}
-              capColor={hero.capColor}
-            />
+            {hero.imageUrl ? (
+              <BottlePhoto className="aspect-square w-full" src={hero.imageUrl} alt={hero.name} />
+            ) : (
+              <BottleViewer
+                className="aspect-square w-full"
+                shape={hero.bottleShape}
+                liquidColor={hero.liquidColor}
+                capColor={hero.capColor}
+              />
+            )}
             <Link href={`/parfum/${hero.slug}`} className="block text-center">
               <p className="text-xs text-muted">{hero.brand.name}</p>
               <p className="text-xl font-semibold tracking-tight hover:text-accent">{hero.name} →</p>

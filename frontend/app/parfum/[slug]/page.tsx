@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Bottle from "@/components/Bottle";
+import BottlePhoto from "@/components/BottlePhoto";
+import BottleThumb from "@/components/BottleThumb";
 import BottleViewer from "@/components/BottleViewer";
 import {
   genderLabel,
@@ -26,15 +27,21 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
       {/* En-tête du parfum */}
       <section className="grid gap-4 md:grid-cols-[1fr_1.4fr]">
         <div className="glass relative overflow-hidden rounded-[2.5rem]">
-          <BottleViewer
-            className="aspect-[4/5] w-full"
-            shape={fragrance.bottleShape}
-            liquidColor={fragrance.liquidColor}
-            capColor={fragrance.capColor}
-          />
-          <p className="pointer-events-none absolute inset-x-0 bottom-5 text-center text-xs text-muted">
-            Faites pivoter · molette pour zoomer
-          </p>
+          {fragrance.imageUrl ? (
+            <BottlePhoto className="aspect-[4/5] w-full" src={fragrance.imageUrl} alt={fragrance.name} />
+          ) : (
+            <>
+              <BottleViewer
+                className="aspect-[4/5] w-full"
+                shape={fragrance.bottleShape}
+                liquidColor={fragrance.liquidColor}
+                capColor={fragrance.capColor}
+              />
+              <p className="pointer-events-none absolute inset-x-0 bottom-5 text-center text-xs text-muted">
+                Faites pivoter · molette pour zoomer
+              </p>
+            </>
+          )}
         </div>
         <div className="glass animate-rise rounded-[2.5rem] p-8 md:p-12">
           <Link href={`/marques/${fragrance.brand.slug}`} className="text-sm font-medium text-accent">
@@ -135,9 +142,9 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
             <article key={id} className="glass rounded-[2.5rem] p-8 md:p-10">
               <header className="mb-8 flex flex-wrap items-center gap-6">
                 <div className="flex items-end gap-3">
-                  <Bottle className="w-12" shape={fragrance.bottleShape} liquidColor={fragrance.liquidColor} capColor={fragrance.capColor} />
+                  <BottleThumb className="w-16" fragrance={fragrance} />
                   <span className="pb-5 text-sm text-muted">vs</span>
-                  <Bottle className="w-12" shape={dupe.bottleShape} liquidColor={dupe.liquidColor} capColor={dupe.capColor} />
+                  <BottleThumb className="w-16" fragrance={dupe} />
                 </div>
                 <div>
                   <p className="text-xs text-muted">{dupe.brand.name}</p>
@@ -252,7 +259,7 @@ function SummaryRow({
     <tr className="border-b border-line last:border-0">
       <td className="py-4">
         <Link href={`/parfum/${fragrance.slug}`} className="group flex items-center gap-3">
-          <Bottle className="w-7" shape={fragrance.bottleShape} liquidColor={fragrance.liquidColor} capColor={fragrance.capColor} />
+          <BottleThumb className="w-10" fragrance={fragrance} />
           <span>
             <span className="block text-xs text-muted">{fragrance.brand.name}</span>
             <span className="font-semibold group-hover:text-accent">{fragrance.name}</span>
