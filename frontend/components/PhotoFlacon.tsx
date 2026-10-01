@@ -15,6 +15,8 @@ const ROWS = 200; // résolution verticale de la silhouette
 const SEGMENTS = 48; // points par demi-section
 const SMOOTHING = 3; // lignes de part et d'autre pour lisser la silhouette
 const EDGE_BAND = 0.12; // part de la largeur utilisée pour la couleur des flancs
+const SIDE_SMOOTHING = 12; // lignes de part et d'autre pour adoucir la couleur des flancs
+const SIDE_UNIFORMITY = 0.45; // attraction de chaque ligne vers la teinte moyenne des flancs
 
 // Profondeur relative et arrondi de la section selon la forme du flacon
 const sections: Record<BottleShape, { depth: number; roundness: number }> = {
@@ -118,6 +120,15 @@ function opaqueTexture(image: HTMLImageElement) {
   return texture;
 }
 
+function averageRGB(colors: RGB[]): RGB {
+  const sum = colors.reduce<RGB>((acc, c) => [acc[0] + c[0], acc[1] + c[1], acc[2] + c[2]], [0, 0, 0]);
+  return [sum[0] / colors.length, sum[1] / colors.length, sum[2] / colors.length];
+}
+
+function mixRGB(a: RGB, b: RGB, t: number): RGB {
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+}
+
 function median(values: number[]) {
   const sorted = [...values].sort((a, b) => a - b);
   return sorted[Math.floor(sorted.length / 2)]!;
@@ -146,10 +157,21 @@ function measureSilhouette(image: HTMLImageElement) {
     });
   }
 
-  // Médiane glissante : supprime les dents laissées par le détourage sans arrondir les épaules
+  // Teinte moyenne des flancs, vers laquelle chaque ligne est attirée (pas de rayures sur le verre ciselé)
+  const overall = averageRGB(rows.flatMap((r) => [r.left, r.right]));
+
+  // Médiane glissante sur la silhouette (supprime les dents du détourage sans arrondir les épaules)
+  // et moyenne large sur la couleur des flancs
   const smoothed = rows.map((row, i) => {
     const near = rows.slice(Math.max(0, i - SMOOTHING), i + SMOOTHING + 1);
-    return { ...row, half: median(near.map((r) => r.half)), center: median(near.map((r) => r.center)) };
+    const wide = rows.slice(Math.max(0, i - SIDE_SMOOTHING), i + SIDE_SMOOTHING + 1);
+    return {
+      ...row,
+      half: median(near.map((r) => r.half)),
+      center: median(near.map((r) => r.center)),
+      left: mixRGB(averageRGB(wide.map((r) => r.left)), overall, SIDE_UNIFORMITY),
+      right: mixRGB(averageRGB(wide.map((r) => r.right)), overall, SIDE_UNIFORMITY),
+    };
   });
 
   // Fermeture du volume en haut et en bas
