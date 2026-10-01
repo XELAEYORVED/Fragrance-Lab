@@ -1,0 +1,49 @@
+# Blueprint Render : crée les deux services du site depuis ce dépôt (branche main).
+# Région Ohio : la même zone que la base Neon (aws us-east-2), pour des requêtes quasi instantanées.
+
+services:
+  # API Express + Prisma
+  - type: web
+    name: fragrance-lab-api
+    runtime: node
+    region: ohio
+    plan: free
+    rootDir: backend
+    branch: main
+    buildCommand: npm ci && npm run build
+    # Applique les migrations en attente avant chaque démarrage
+    startCommand: npm run migrate:deploy && npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      # Chaîne de connexion Neon, à saisir dans le tableau de bord Render (jamais dans le dépôt)
+      - key: DATABASE_URL
+        sync: false
+      # Adresse du site, pour autoriser ses appels (CORS)
+      - key: FRONTEND_HOST
+        fromService:
+          type: web
+          name: fragrance-lab-web
+          property: host
+
+  # Site Next.js
+  - type: web
+    name: fragrance-lab-web
+    runtime: node
+    region: ohio
+    plan: free
+    rootDir: frontend
+    branch: main
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      # Adresse de l'API, utilisée par les pages côté serveur
+      - key: API_HOST
+        fromService:
+          type: web
+          name: fragrance-lab-api
+          property: host

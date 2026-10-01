@@ -3,6 +3,9 @@ import BrandLogo from "@/components/BrandLogo";
 import Reveal from "@/components/Reveal";
 import { getBrands } from "@/lib/api";
 
+// Rendue à la demande (les données restent en cache 5 min) : la compilation n'a pas besoin de joindre l'API
+export const dynamic = "force-dynamic";
+
 export default async function BrandsPage() {
   const brands = await getBrands();
 

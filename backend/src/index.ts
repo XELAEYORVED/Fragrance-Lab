@@ -10,7 +10,12 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000" }));
+// Sur Render, FRONTEND_HOST est fourni automatiquement par le service frontend (sans « https:// »)
+const FRONTEND_URL =
+  process.env.FRONTEND_URL ??
+  (process.env.FRONTEND_HOST ? `https://${process.env.FRONTEND_HOST}` : "http://localhost:3000");
+
+app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
 
 // Profil olfactif complet d'un parfum : notes triées et accords du plus fort au plus faible

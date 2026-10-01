@@ -1,6 +1,9 @@
 // Types et accès à l'API backend
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// Adresse du backend, lue côté serveur uniquement (les pages appellent l'API depuis le serveur).
+// Sur Render, API_HOST est fourni automatiquement par le service backend (sans « https:// »).
+const API_URL =
+  process.env.API_URL ?? (process.env.API_HOST ? `https://${process.env.API_HOST}` : "http://localhost:4000");
 
 export type BottleShape = "ROUND" | "SQUARE" | "RECTANGLE" | "CYLINDER" | "PEBBLE" | "FACETED";
 export type NoteLevel = "TOP" | "HEART" | "BASE";

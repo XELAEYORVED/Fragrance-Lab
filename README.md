@@ -109,3 +109,25 @@ Order {
 
 - Priorité donnée à un site **fonctionnel de bout en bout** plutôt qu'à une 3D exhaustive sur tout le catalogue : un seul flacon bien modélisé suffit pour la démo.
 - Le chatbot doit s'appuyer sur une vraie fonction de recherche côté backend (pas de réponses inventées par le LLM) pour garantir que les recommandations correspondent à des produits réellement en stock.
+
+## 🚀 Déploiement (Render)
+
+Les deux services sont décrits dans [`render.yaml`](render.yaml) et déployés depuis la branche `main`.
+
+1. Sur [render.com](https://render.com) : **New → Blueprint**, puis choisir ce dépôt GitHub.
+2. Render lit `render.yaml` et propose deux services : `fragrance-lab-api` (backend) et `fragrance-lab-web` (site).
+3. Saisir la variable secrète **`DATABASE_URL`** (chaîne de connexion Neon) quand Render la demande.
+4. Valider : Render compile, applique les migrations Prisma et met le site en ligne.
+
+L'adresse de l'API (`API_HOST`) et celle du site (`FRONTEND_HOST`) sont reliées automatiquement entre les deux services.
+
+> Offre gratuite : un service inactif depuis 15 minutes se met en veille ; la première visite suivante prend environ une minute.
+
+### En local
+
+```bash
+cd backend && npm run dev     # API sur http://localhost:4000
+cd frontend && npm run dev    # site sur http://localhost:3000
+```
+
+Version optimisée (identique à la production) : `npm run build && npm start` dans chaque dossier.
