@@ -1,5 +1,5 @@
 import Link from "next/link";
-import BottleViewer from "@/components/BottleViewer";
+import BottleThumb from "@/components/BottleThumb";
 import FragranceCard from "@/components/FragranceCard";
 import Reveal from "@/components/Reveal";
 import { getFragrances, getRandomFragrance } from "@/lib/api";
@@ -50,13 +50,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         </Reveal>
         {hero && (
           <Reveal className="glass mx-auto w-full max-w-sm overflow-hidden rounded-[2.5rem] pb-8">
-            <BottleViewer
-              className="aspect-square w-full"
-              shape={hero.bottleShape}
-              liquidColor={hero.liquidColor}
-              capColor={hero.capColor}
-              imageUrl={hero.imageUrl}
-            />
+            <Link href={`/parfum/${hero.slug}`} className="block px-16 pt-10 pb-6">
+              <BottleThumb fragrance={hero} className="mx-auto w-full max-w-[220px]" />
+            </Link>
             <Link href={`/parfum/${hero.slug}`} className="block text-center">
               <p className="text-xs text-muted">{hero.brand.name}</p>
               <p className="text-xl font-semibold tracking-tight transition-colors hover:text-accent">{hero.name} →</p>

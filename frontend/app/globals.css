@@ -138,24 +138,6 @@ body {
 /* Le fond reste immobile : s'il bougeait, le navigateur devrait recalculer le flou
    de chaque panneau en verre à chaque image, ce qui saccade la page. */
 
-/* ─── Défilement : photos à la place de la 3D ─────────
-   Pendant un défilement, la scène 3D (fixe) est masquée et les photos des flacons,
-   qui défilent avec la page, prennent le relais au même cadrage. */
-
-.shared-scene {
-  transition: opacity 0.2s ease;
-}
-
-html[data-scrolling] .shared-scene {
-  opacity: 0;
-  transition-duration: 0s;
-}
-
-html[data-scrolling] .thumb-static {
-  opacity: 1 !important;
-  transition-duration: 0s;
-}
-
 /* ─── Mouvements ────────────────────────────────────── */
 
 @keyframes float {

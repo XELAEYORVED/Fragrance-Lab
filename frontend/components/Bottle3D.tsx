@@ -196,6 +196,30 @@ function Glint({ enabled }: { enabled: boolean }) {
 
 const restingPointer = { current: { x: 0, y: 0, active: false } };
 
+// Éclairage : au repos, une lumière douce et uniforme, sans aucun reflet, pour bien voir le flacon.
+// Les reflets (environnement studio et lumière principale) n'apparaissent, en fondu,
+// que lorsque le pointeur touche le flacon.
+function TouchLighting({ pointer, motion }: { pointer: React.RefObject<PointerState>; motion: boolean }) {
+  const ambient = useRef<THREE.AmbientLight>(null);
+  const key = useRef<THREE.DirectionalLight>(null);
+  const touch = useRef(0);
+
+  useFrame((state, delta) => {
+    const target = pointer.current?.active ? 1 : 0;
+    touch.current = motion ? THREE.MathUtils.damp(touch.current, target, 6, Math.min(delta, 1 / 30)) : target;
+    state.scene.environmentIntensity = touch.current;
+    if (ambient.current) ambient.current.intensity = 2.2 - 1.6 * touch.current;
+    if (key.current) key.current.intensity = 1.2 * touch.current;
+  });
+
+  return (
+    <>
+      <ambientLight ref={ambient} intensity={2.2} />
+      <directionalLight ref={key} position={[3, 5, 4]} intensity={0} />
+    </>
+  );
+}
+
 export default function Bottle3D(props: Bottle3DProps) {
   const [motion] = useState(
     () => typeof window === "undefined" || !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -221,8 +245,7 @@ export default function Bottle3D(props: Bottle3DProps) {
         <Lightformer intensity={2} color={props.liquidColor} position={[0, -3, -4]} scale={[12, 4, 1]} />
         <Glint enabled={motion} />
       </Environment>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[3, 5, 4]} intensity={1.2} />
+      <TouchLighting pointer={props.pointer ?? restingPointer} motion={motion} />
 
       <Intro enabled={motion}>
         <Tilt3D pointer={props.pointer ?? restingPointer} motion={motion} maxYaw={0.5} maxPitch={0.25} hoverScale={1.04}>
