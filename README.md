@@ -1,5 +1,9 @@
 # Essentia — Plateforme e-commerce de parfums avec IA & 3D
 
+🔗 **Démo en ligne : [fragrance-lab-kappa.vercel.app](https://fragrance-lab-kappa.vercel.app)**
+
+> Hébergement gratuit : la toute première visite peut prendre quelques secondes, le temps que le serveur se réveille.
+
 Projet Bac 3 Informatique & Développement d'Applications — Durée cible : ~1 mois
 
 ## 🎯 Objectif
@@ -115,7 +119,7 @@ Order {
 | Partie | Hébergeur | Adresse |
 |---|---|---|
 | API (Express + Prisma) | Render, offre gratuite, région Ohio | https://fragrance-lab-api.onrender.com |
-| Site (Next.js) | Vercel, offre gratuite | voir le projet Vercel |
+| Site (Next.js) | Vercel, offre gratuite | https://fragrance-lab-kappa.vercel.app |
 | Base de données | Neon (PostgreSQL), aws us-east-2 | — |
 
 - **API** : décrite dans [`render.yaml`](render.yaml) (Blueprint Render, branche `main`). Variable secrète à saisir dans Render : `DATABASE_URL`.
