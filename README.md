@@ -56,6 +56,28 @@ Site e-commerce full-stack pour la vente de parfums, avec :
 - Polish : responsive, page 404, tests rapides
 - Déploiement : Vercel (front) + Railway/Render (back + DB)
 
+## 🚧 À faire — v1
+
+Chaque fonctionnalité a sa branche et sera livrée par pull request.
+
+- [ ] **🧮 Moteur de similarité** — `feature/similarity-engine`
+  Pourcentage de ressemblance entre tous les parfums (notes pondérées par étage + accords), alternatives moins chères pour tout le catalogue. *Prérequis des fonctionnalités 1 et 3.*
+
+- [ ] **📸 1. Prends ton flacon en photo** — `feature/photo-recognition`
+  Le visiteur photographie son parfum avec son téléphone ; le site le reconnaît (vision de Claude), ouvre sa fiche et affiche aussitôt ses dupes et les alternatives moins chères. Un Shazam du parfum.
+
+- [ ] **🌌 2. La galaxie olfactive** — `feature/olfactive-galaxy`
+  Les ~1 900 parfums affichés comme des étoiles en 3D : ceux qui sentent pareil sont proches. Zoom, déplacement, dupes en orbite autour de leur original, familles olfactives en constellations.
+
+- [ ] **🧪 3. Le laboratoire de superposition** — `feature/layering-lab`
+  « Recrée Angels' Share (250 €) en superposant deux parfums à 30 € » : l'algorithme cherche la paire abordable dont les notes réunies ressemblent le plus à l'original, avec un pourcentage. Et dans l'autre sens : « que donne Khamrah + Naxos ? ».
+
+- [ ] **⏳ 4. La vie du parfum sur la peau** — `feature/scent-timeline`
+  Frise animée de ce que l'on sent dans le temps : à la pose (tête), après 1 h (cœur), après 6 h (fond), avec les photos des ingrédients qui apparaissent et s'effacent au fil du curseur.
+
+- [ ] **💶 5. Le compteur d'économies** — `feature/savings-counter`
+  « En passant de Baccarat Rouge à Club de Nuit Untold, vous économisez 312 € par an », calculé à partir du prix au ml et de 2 pulvérisations par jour.
+
 ## 🗃️ Modèle de données (aperçu Prisma / conceptuel)
 
 ```
