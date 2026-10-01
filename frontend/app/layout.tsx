@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   title: "Fragrance Lab — Les parfums du monde et leurs dupes",
   description:
     "Trouvez votre parfum idéal, comparez ses notes et découvrez ses alternatives moins chères.",
+  // Projet de portfolio : accessible par lien, mais pas référencé par les moteurs de recherche
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
