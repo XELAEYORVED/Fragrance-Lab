@@ -252,7 +252,8 @@ export default function Bottle3D(props: Bottle3DProps) {
         <Float speed={motion ? 1.4 : 0} rotationIntensity={0.08} floatIntensity={0.5} floatingRange={[-0.06, 0.06]}>
           {props.imageUrl ? (
             <Suspense fallback={null}>
-              <PhotoFlacon src={props.imageUrl} shape={props.shape} />
+              {/* Photo HD (agrandie ×4 par IA) pour le grand flacon de la page détail */}
+              <PhotoFlacon src={props.imageUrl.replace("/bottles/", "/bottles-hd/")} shape={props.shape} textureSize={2048} />
             </Suspense>
           ) : (
             <Flacon {...props} />
