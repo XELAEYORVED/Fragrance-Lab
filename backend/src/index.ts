@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 dotenv.config();
 
@@ -12,20 +13,62 @@ const PORT = process.env.PORT || 4000;
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000" }));
 app.use(express.json());
 
+// Profil olfactif complet d'un parfum : notes triées et accords du plus fort au plus faible
+const profile = {
+  brand: true,
+  notes: { include: { note: true } },
+  accords: { include: { accord: true }, orderBy: { strength: "desc" } },
+  links: { include: { retailer: true }, orderBy: { price: "asc" } },
+} satisfies Prisma.FragranceInclude;
+
 // Route de test
 app.get("/", (req, res) => {
   res.send("API Fragrance Lab en ligne 🌸");
 });
 
-// Récupérer tous les parfums (route provisoire, l'API complète arrive dans feature/fragrances-api)
+// Liste des parfums, avec recherche optionnelle par nom ou marque (?q=)
 app.get("/api/fragrances", async (req, res) => {
-  try {
-    const fragrances = await prisma.fragrance.findMany({ include: { brand: true } });
-    res.json(fragrances);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erreur lors de la récupération des parfums" });
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const fragrances = await prisma.fragrance.findMany({
+    where: q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { brand: { name: { contains: q, mode: "insensitive" } } },
+          ],
+        }
+      : {},
+    include: {
+      brand: true,
+      accords: { include: { accord: true }, orderBy: { strength: "desc" }, take: 3 },
+      _count: { select: { dupes: true } },
+    },
+    orderBy: { name: "asc" },
+  });
+  res.json(fragrances);
+});
+
+// Détail d'un parfum avec ses dupes et les originaux dont il s'inspire
+app.get("/api/fragrances/:slug", async (req, res) => {
+  const fragrance = await prisma.fragrance.findUnique({
+    where: { slug: req.params.slug },
+    include: {
+      ...profile,
+      dupes: { include: { dupe: { include: profile } }, orderBy: { similarity: "desc" } },
+      inspiredBy: { include: { original: { include: { brand: true } } } },
+    },
+  });
+  if (!fragrance) {
+    res.status(404).json({ error: "Parfum introuvable" });
+    return;
   }
+  res.json(fragrance);
+});
+
+// Express 5 transmet ici les erreurs des routes async
+app.use((error: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(error);
+  res.status(500).json({ error: "Erreur interne du serveur" });
 });
 
 app.listen(PORT, () => {
