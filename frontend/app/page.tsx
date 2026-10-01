@@ -55,7 +55,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             <input
               name="q"
               defaultValue={query}
-              placeholder="Rechercher un parfum ou une maison"
+              placeholder="Un parfum, une maison…"
               className="flex-1 bg-transparent py-2.5 text-[17px] outline-none placeholder:text-muted"
             />
             <button
