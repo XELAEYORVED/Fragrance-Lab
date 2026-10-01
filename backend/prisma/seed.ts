@@ -1,32 +1,19 @@
 import { PrismaClient } from "@prisma/client";
-import type { BottleShape, Concentration, Gender, Season, TimeOfDay } from "@prisma/client";
+import type { Season, TimeOfDay } from "@prisma/client";
+import { nicheBrands, nicheFragrances, type NicheFragrance } from "./data/niche";
 
 const prisma = new PrismaClient();
 
 // Données de démarrage : pyramides et accords d'après les fiches publiques,
 // à vérifier et compléter avant la démo.
 
-type SeedFragrance = {
-  slug: string;
-  name: string;
-  brand: string;
-  year: number;
-  gender: Gender;
-  concentration: Concentration;
-  family: string;
-  description: string;
-  longevity: number;
-  sillage: number;
-  seasons: Season[];
-  timesOfDay: TimeOfDay[];
-  bottleShape: BottleShape;
-  liquidColor: string;
-  capColor: string;
-  top: string[];
-  heart: string[];
-  base: string[];
-  accords: Record<string, number>;
-  dupeOf?: string[];
+// Les fiches historiques ont en plus un profil de performance et des accords
+type SeedFragrance = NicheFragrance & {
+  longevity?: number;
+  sillage?: number;
+  seasons?: Season[];
+  timesOfDay?: TimeOfDay[];
+  accords?: Record<string, number>;
 };
 
 const brands: { name: string; country: string; website?: string }[] = [
@@ -303,11 +290,19 @@ async function main() {
   await prisma.accord.deleteMany();
   await prisma.brand.deleteMany();
 
-  for (const brand of brands) {
+  for (const brand of [...brands, ...nicheBrands]) {
     await prisma.brand.create({ data: { ...brand, slug: slugify(brand.name) } });
   }
 
-  for (const f of fragrances) {
+  const all: SeedFragrance[] = [...fragrances, ...nicheFragrances];
+
+  // Notes et accords créés d'abord : un même parfum peut citer une note à deux étages
+  const noteNames = new Set(all.flatMap((f) => [...f.top, ...f.heart, ...f.base]));
+  await prisma.note.createMany({ data: [...noteNames].map((name) => ({ name, slug: slugify(name) })) });
+  const accordNames = new Set(all.flatMap((f) => Object.keys(f.accords ?? {})));
+  await prisma.accord.createMany({ data: [...accordNames].map((name) => ({ name, slug: slugify(name) })) });
+
+  for (const f of all) {
     const { brand, top, heart, base, accords, dupeOf, ...data } = f;
     const notes = [
       ...top.map((name) => ({ name, level: "TOP" as const })),
@@ -321,22 +316,19 @@ async function main() {
         imageUrl: `/bottles/${data.slug}.webp`,
         brand: { connect: { name: brand } },
         notes: {
-          create: notes.map(({ name, level }) => ({
-            level,
-            note: { connectOrCreate: { where: { name }, create: { name, slug: slugify(name) } } },
-          })),
+          create: notes.map(({ name, level }) => ({ level, note: { connect: { name } } })),
         },
         accords: {
-          create: Object.entries(accords).map(([name, strength]) => ({
+          create: Object.entries(accords ?? {}).map(([name, strength]) => ({
             strength,
-            accord: { connectOrCreate: { where: { name }, create: { name, slug: slugify(name) } } },
+            accord: { connect: { name } },
           })),
         },
       },
     });
   }
 
-  for (const f of fragrances) {
+  for (const f of all) {
     for (const originalSlug of f.dupeOf ?? []) {
       await prisma.dupe.create({
         data: {

@@ -70,7 +70,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
       </section>
 
       {/* Pyramide et accords */}
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className={`grid gap-4 ${fragrance.accords.length > 0 ? "md:grid-cols-2" : ""}`}>
         <Reveal className="glass rounded-[2.5rem] p-8 md:p-10">
           <SectionTitle>Pyramide olfactive</SectionTitle>
           <div className="space-y-5">
@@ -90,10 +90,13 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
             ))}
           </div>
         </Reveal>
-        <Reveal className="glass rounded-[2.5rem] p-8 md:p-10">
-          <SectionTitle>Accords dominants</SectionTitle>
-          <AccordBars fragrance={fragrance} />
-        </Reveal>
+        {/* Les accords ne sont affichés que lorsqu'une source fiable les donne */}
+        {fragrance.accords.length > 0 && (
+          <Reveal className="glass rounded-[2.5rem] p-8 md:p-10">
+            <SectionTitle>Accords dominants</SectionTitle>
+            <AccordBars fragrance={fragrance} />
+          </Reveal>
+        )}
       </section>
 
       {/* Dupes */}
@@ -153,7 +156,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
                 </div>
               </header>
 
-              <div className="grid gap-10 lg:grid-cols-2">
+              <div className={`grid gap-10 ${fragrance.accords.length && dupe.accords.length ? "lg:grid-cols-2" : ""}`}>
                 <div className="space-y-5">
                   {notes.byLevel.map(({ level, shared, onlyOriginal, onlyDupe }, li) => (
                     <div key={level} className="grid grid-cols-[3.5rem_1fr] gap-3">
@@ -178,6 +181,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
                   </p>
                 </div>
 
+                {fragrance.accords.length > 0 && dupe.accords.length > 0 && (
                 <div className="space-y-3">
                   {compareAccords(fragrance, dupe).map((a, i) => (
                     <div key={a.name}>
@@ -196,6 +200,7 @@ export default async function FragrancePage({ params }: PageProps<"/parfum/[slug
                     <span><span className="mr-1.5 inline-block h-1.5 w-4 rounded-full bg-accent align-middle" />{dupe.name}</span>
                   </p>
                 </div>
+                )}
               </div>
             </Reveal>
           ))}
